@@ -1,0 +1,202 @@
+---
+import ExamPanel from '../ui/ExamPanel.astro';
+import Eyebrow from '../ui/Eyebrow.astro';
+import Icon from '../ui/Icon.astro';
+import PracticePanel from '../ui/PracticePanel.astro';
+import FeatureCard from './FeatureCard.astro';
+
+const amoBenefits = [
+	{ icon: 'monitor', tone: 'orange', name: '100% online', meta: 'SMA/SMK' },
+	{ icon: 'spark', tone: 'blue', name: 'E-sertifikat', meta: 'Semua peserta' },
+	{ icon: 'trophy', tone: 'green', name: 'Hadiah uang tunai', meta: 'Juara umum' },
+];
+---
+
+<section class="section" id="fitur">
+	<div class="container">
+		<div class="section-head reveal">
+			<Eyebrow>Satu platform, tiga cara naik level</Eyebrow>
+			<h2>Belajar dengan cara yang paling cocok untukmu</h2>
+			<p>
+				Mulai dari latihan harian, uji kesiapan dengan tryout, lalu buktikan kemampuanmu di
+				kompetisi nasional.
+			</p>
+		</div>
+
+		<div class="feature-grid">
+			<FeatureCard
+				class="reveal"
+				variant="orange"
+				kicker="Kompetisi"
+				icon="trophy"
+				title="Ascendemy Mathematics Olympiad"
+				description="Uji kemampuanmu di olimpiade matematika nasional. 100% online, e-sertifikat, dan hadiah uang tunai untuk juara umum."
+				linkLabel="Lihat kompetisi"
+				href="https://cbt.ascendemy.id/kompetisi"
+			>
+				<div class="mock-panel">
+					<div class="mock-head">
+						<span class="mock-title">Keunggulan AMO 2026</span>
+						<span class="mock-tag">Gratis</span>
+					</div>
+					{amoBenefits.map((benefit) => (
+						<div class="mock-row">
+							<span class:list={['mock-avatar', benefit.tone !== 'orange' && benefit.tone]}>
+								<Icon name={benefit.icon} size={11} />
+							</span>
+							<span class="mock-name">{benefit.name}</span>
+							<span class="mock-points">{benefit.meta}</span>
+						</div>
+					))}
+				</div>
+			</FeatureCard>
+
+			<FeatureCard
+				class="reveal"
+				variant="blue"
+				kicker="Tryout"
+				icon="monitor"
+				title="Tryout TKA & UTBK"
+				description="Simulasi ujian dengan timer, analisis skor, dan pembahasan. Rasakan pengalaman Computer Based Test yang sesungguhnya."
+				linkLabel="Mulai tryout"
+				href="https://cbt.ascendemy.id/tryout"
+			>
+				<ExamPanel
+					compact
+					title="Tryout TKA · Matematika"
+					timer="00:42:18"
+					question="Jika 2x + 5 = 17, nilai x adalah…"
+					options={['A. 4', 'B. 5', 'C. 6', 'D. 7']}
+					correctIndex={2}
+				/>
+			</FeatureCard>
+
+			<FeatureCard
+				class="reveal"
+				variant="cream"
+				kicker="Latihan"
+				icon="book"
+				title="Latihan soal adaptif"
+				description="Ribuan soal matematika dari SMP hingga SMA, lengkap dengan pembahasan langkah demi langkah."
+				linkLabel="Mulai latihan"
+				href="https://cbt.ascendemy.id/latihan"
+			>
+				<PracticePanel
+					compact
+					title="Latihan Matematika"
+					badge="Gratis"
+					chips={['Aljabar', 'Geometri', 'Statistika']}
+					rows={[
+						{ label: 'Persamaan linear', value: 84 },
+						{ label: 'Fungsi kuadrat', value: 72 },
+						{ label: 'Peluang', value: 61 },
+					]}
+				/>
+			</FeatureCard>
+		</div>
+	</div>
+</section>
+
+<style>
+	.section-head {
+		max-width: 760px;
+		margin: 0 auto 48px;
+		text-align: center;
+	}
+
+	.section-head h2 {
+		margin: 14px 0 0;
+		font-family: var(--font-display);
+		font-weight: 600;
+		font-size: clamp(34px, 4.2vw, 52px);
+		line-height: 1.06;
+		letter-spacing: -0.04em;
+		color: var(--ink);
+	}
+
+	.section-head p {
+		margin: 16px auto 0;
+		max-width: 620px;
+		font-size: 16px;
+		line-height: 1.65;
+		color: var(--muted);
+	}
+
+	.feature-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 20px;
+	}
+
+	.mock-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		margin-bottom: 10px;
+	}
+
+	.mock-row {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		padding: 7px 0;
+		border-bottom: 1px solid #f3efe9;
+	}
+
+	.mock-row:last-child {
+		border-bottom: 0;
+	}
+
+	.mock-avatar {
+		width: 23px;
+		height: 23px;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: #fde3cf;
+		color: #c2410c;
+		font-size: 9px;
+		font-weight: 800;
+	}
+
+	.mock-avatar.blue {
+		background: #dbe8ff;
+		color: #1d4ed8;
+	}
+
+	.mock-avatar.green {
+		background: #dcf0de;
+		color: #2f6b3a;
+	}
+
+	.mock-name {
+		flex: 1;
+		font-size: 10px;
+		font-weight: 600;
+		color: #3f434a;
+	}
+
+	.mock-points {
+		font-family: var(--font-mono);
+		font-size: 9px;
+		color: #8a8f99;
+	}
+
+	@media (max-width: 900px) {
+		.feature-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.section-head {
+			margin-bottom: 32px;
+		}
+
+		.section-head h2 {
+			font-size: clamp(30px, 8vw, 38px);
+		}
+	}
+</style>

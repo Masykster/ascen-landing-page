@@ -1,0 +1,592 @@
+---
+import { Image } from 'astro:assets';
+import carouselTryout from '../../assets/images/carousel-tryout.webp';
+import carouselLatihan from '../../assets/images/carousel-latihan.webp';
+import carouselKompetisi from '../../assets/images/Carousel-Kompetisi.webp';
+import Button from '../ui/Button.astro';
+import Eyebrow from '../ui/Eyebrow.astro';
+import Icon from '../ui/Icon.astro';
+
+const slides = [
+	{
+		src: carouselTryout,
+		alt: 'Tryout TKA dengan pengalaman Computer Based Test',
+		eager: true,
+	},
+	{
+		src: carouselLatihan,
+		alt: 'Latihan soal matematika untuk SMP dan SMA',
+		eager: false,
+	},
+	{
+		src: carouselKompetisi,
+		alt: 'Ascendemy Mathematics Olympiad 2026 untuk siswa SMA dan SMK',
+		eager: false,
+	},
+];
+---
+
+<section class="hero" id="beranda">
+	<div class="container">
+		<div class="hero-copy">
+			<Eyebrow>Belajar · Tryout · Berkompetisi</Eyebrow>
+			<h1>
+				Tingkatkan kompetensi dengan <span class="accent">Computer Based Test</span>
+			</h1>
+			<p class="hero-lede">
+				Latihan soal, tryout TKA, dan olimpiade matematika dalam satu platform. Ukur
+				kemampuanmu, raih prestasi, dan naik level bersama Ascendemy.
+			</p>
+			<div class="hero-actions">
+				<Button href="https://cbt.ascendemy.id/register" size="lg" icon="arrow">
+					Daftar sekarang
+				</Button>
+				<Button href="#tryout" variant="ghost" size="lg">Jelajahi tryout</Button>
+			</div>
+			<p class="hero-note">Gratis untuk mulai · 1.641 paket ujian · 19.975 soal</p>
+		</div>
+
+		<div class="hero-stage">
+			<div class="hero-window">
+				<div class="window-bar">
+					<div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+					<span class="window-url">cbt.ascendemy.id</span>
+					<span class="window-live">Online</span>
+				</div>
+
+				<div
+					class="hero-carousel"
+					data-carousel
+					aria-roledescription="carousel"
+					aria-label="Sorotan Ascendemy"
+				>
+					{slides.map((slide, index) => (
+						<div
+							class:list={['hero-slide', index === 0 && 'is-active']}
+							aria-hidden={index === 0 ? 'false' : 'true'}
+						>
+							<Image
+								class="hero-img"
+								src={slide.src}
+								alt={slide.alt}
+								widths={[768, 1200, 1536]}
+								sizes="(max-width: 640px) calc(100vw - 32px), (max-width: 1200px) calc(100vw - 48px), 1200px"
+								loading={slide.eager ? 'eager' : 'lazy'}
+								fetchpriority={slide.eager ? 'high' : 'auto'}
+								format="webp"
+							/>
+						</div>
+					))}
+
+					<button class="carousel-arrow prev" type="button" aria-label="Slide sebelumnya">
+						<Icon name="chev-left" size={16} />
+					</button>
+					<button class="carousel-arrow next" type="button" aria-label="Slide berikutnya">
+						<Icon name="chev-right" size={16} />
+					</button>
+
+					<div class="carousel-dots" role="tablist" aria-label="Pilih slide">
+						{slides.map((_, index) => (
+							<button
+								class:list={['carousel-dot', index === 0 && 'is-active']}
+								type="button"
+								role="tab"
+								aria-selected={index === 0 ? 'true' : 'false'}
+								aria-label={`Slide ${index + 1}`}
+								tabindex={index === 0 ? 0 : -1}
+							>
+							</button>
+						))}
+					</div>
+				</div>
+			</div>
+
+			<div class="float-card float-a">
+				<span class="float-icon orange"><Icon name="chart" size={17} /></span>
+				<div><strong>1.641</strong><span>Paket ujian</span></div>
+			</div>
+			<div class="float-card float-b">
+				<span class="float-icon blue"><Icon name="users" size={17} /></span>
+				<div><strong>98%</strong><span>Kepuasan siswa</span></div>
+			</div>
+		</div>
+	</div>
+</section>
+
+<script>
+	const root = document.querySelector<HTMLElement>('[data-carousel]');
+
+	if (root) {
+		const slides = Array.from(root.querySelectorAll<HTMLElement>('.hero-slide'));
+		const dots = Array.from(root.querySelectorAll<HTMLButtonElement>('.carousel-dot'));
+		const prev = root.querySelector<HTMLButtonElement>('.carousel-arrow.prev');
+		const next = root.querySelector<HTMLButtonElement>('.carousel-arrow.next');
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		let index = 0;
+		let timer: number | null = null;
+		const interval = 6500;
+
+		function show(target: number) {
+			index = (target + slides.length) % slides.length;
+
+			slides.forEach((slide, i) => {
+				slide.classList.toggle('is-active', i === index);
+				slide.setAttribute('aria-hidden', i === index ? 'false' : 'true');
+			});
+
+			dots.forEach((dot, i) => {
+				dot.classList.toggle('is-active', i === index);
+				dot.setAttribute('aria-selected', i === index ? 'true' : 'false');
+				dot.tabIndex = i === index ? 0 : -1;
+			});
+		}
+
+		function stop() {
+			if (timer !== null) {
+				window.clearInterval(timer);
+				timer = null;
+			}
+		}
+
+		function start() {
+			if (reduceMotion || slides.length < 2) return;
+			stop();
+			timer = window.setInterval(() => show(index + 1), interval);
+		}
+
+		function go(target: number) {
+			show(target);
+			start();
+		}
+
+		prev?.addEventListener('click', () => go(index - 1));
+		next?.addEventListener('click', () => go(index + 1));
+		dots.forEach((dot, i) => dot.addEventListener('click', () => go(i)));
+
+		root.addEventListener('mouseenter', stop);
+		root.addEventListener('mouseleave', start);
+		root.addEventListener('focusin', stop);
+		root.addEventListener('focusout', start);
+
+		root.addEventListener('keydown', (event) => {
+			if (event.key === 'ArrowLeft') {
+				event.preventDefault();
+				go(index - 1);
+			} else if (event.key === 'ArrowRight') {
+				event.preventDefault();
+				go(index + 1);
+			}
+		});
+
+		document.addEventListener('visibilitychange', () => {
+			if (document.hidden) stop();
+			else start();
+		});
+
+		show(0);
+		start();
+	}
+</script>
+
+<style>
+	.hero {
+		position: relative;
+		overflow: hidden;
+		padding: 68px 0 0;
+		background:
+			radial-gradient(900px 420px at 18% 0%, #fff1e4 0%, rgba(255, 241, 228, 0) 70%),
+			radial-gradient(800px 420px at 86% 8%, #eef4ff 0%, rgba(238, 244, 255, 0) 68%),
+			linear-gradient(180deg, #fdf9f4 0%, #fdfdfd 78%);
+	}
+
+	.hero::before {
+		content: "";
+		position: absolute;
+		inset: 0;
+		background-image: radial-gradient(#e7ded2 1px, transparent 1px);
+		background-size: 26px 26px;
+		opacity: 0.45;
+		mask-image: linear-gradient(180deg, #000 0%, transparent 78%);
+		-webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 78%);
+		pointer-events: none;
+	}
+
+	.hero-copy {
+		position: relative;
+		max-width: 920px;
+		margin: 0 auto;
+		text-align: center;
+	}
+
+	.hero h1 {
+		margin: 22px 0 0;
+		font-family: var(--font-display);
+		font-weight: 600;
+		font-size: clamp(44px, 6.1vw, 74px);
+		line-height: 1.02;
+		letter-spacing: -0.045em;
+		color: var(--ink);
+	}
+
+	.hero h1 .accent {
+		display: inline-block;
+		background: linear-gradient(92deg, var(--blue) 0%, #4f7df0 38%, var(--orange) 100%);
+		-webkit-background-clip: text;
+		background-clip: text;
+		color: transparent;
+	}
+
+	.hero-lede {
+		max-width: 650px;
+		margin: 22px auto 0;
+		font-size: 18px;
+		line-height: 1.6;
+		color: var(--muted);
+	}
+
+	.hero-actions {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px;
+		margin-top: 28px;
+		flex-wrap: wrap;
+	}
+
+	.hero-note {
+		margin-top: 16px;
+		font-size: 12px;
+		font-weight: 600;
+		color: #8a8f99;
+		letter-spacing: 0.01em;
+	}
+
+	.hero-stage {
+		position: relative;
+		margin-top: 54px;
+		padding-bottom: 86px;
+	}
+
+	.hero-window {
+		position: relative;
+		z-index: 2;
+		overflow: hidden;
+		border: 1px solid #e5ded4;
+		border-radius: 28px;
+		background: #fff;
+		box-shadow: 0 48px 100px -52px rgba(35, 39, 46, 0.55);
+	}
+
+	.window-bar {
+		height: 44px;
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		padding: 0 16px;
+		background: #fbf7f2;
+		border-bottom: 1px solid #eee7de;
+	}
+
+	.window-dots {
+		display: flex;
+		gap: 5px;
+	}
+
+	.window-dots span {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: #e3d8cb;
+	}
+
+	.window-dots span:nth-child(1) {
+		background: #f6b39a;
+	}
+
+	.window-dots span:nth-child(2) {
+		background: #f5d49b;
+	}
+
+	.window-dots span:nth-child(3) {
+		background: #b9d9b8;
+	}
+
+	.window-url {
+		flex: 1;
+		max-width: 360px;
+		margin: 0 auto;
+		padding: 5px 12px;
+		border-radius: 999px;
+		background: #fff;
+		border: 1px solid #eee7de;
+		color: #9a938a;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		text-align: center;
+	}
+
+	.window-live {
+		display: inline-flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 10px;
+		font-weight: 700;
+		color: #2f6b3a;
+	}
+
+	.window-live::before {
+		content: "";
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: #46a758;
+	}
+
+	.hero-carousel {
+		position: relative;
+		aspect-ratio: 3 / 2;
+		background: #f6f2ec;
+	}
+
+	.hero-slide {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+		transition: opacity 0.7s ease;
+		pointer-events: none;
+	}
+
+	.hero-slide.is-active {
+		opacity: 1;
+		pointer-events: auto;
+	}
+
+	.hero-slide :global(.hero-img) {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.carousel-arrow {
+		position: absolute;
+		top: 50%;
+		z-index: 3;
+		width: 40px;
+		height: 40px;
+		border: 1px solid rgba(35, 39, 46, 0.1);
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.9);
+		color: var(--ink);
+		display: grid;
+		place-items: center;
+		cursor: pointer;
+		transform: translateY(-50%);
+		transition: background 0.2s ease, transform 0.2s ease;
+		backdrop-filter: blur(8px);
+	}
+
+	.carousel-arrow:hover {
+		background: #fff;
+		transform: translateY(-50%) scale(1.04);
+	}
+
+	.carousel-arrow :global(svg) {
+		width: 16px;
+		height: 16px;
+	}
+
+	.carousel-arrow.prev {
+		left: 16px;
+	}
+
+	.carousel-arrow.next {
+		right: 16px;
+	}
+
+	.carousel-dots {
+		position: absolute;
+		left: 50%;
+		bottom: 16px;
+		z-index: 3;
+		display: flex;
+		gap: 7px;
+		transform: translateX(-50%);
+		padding: 6px 9px;
+		border-radius: 999px;
+		background: rgba(35, 39, 46, 0.55);
+		box-shadow: 0 6px 18px -8px rgba(35, 39, 46, 0.6);
+		backdrop-filter: blur(8px);
+	}
+
+	.carousel-dot {
+		width: 7px;
+		height: 7px;
+		border: 0;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.55);
+		cursor: pointer;
+		transition: width 0.25s ease, background 0.25s ease;
+	}
+
+	.carousel-dot.is-active {
+		width: 22px;
+		background: #fff;
+	}
+
+	.float-card {
+		position: absolute;
+		z-index: 4;
+		display: flex;
+		align-items: center;
+		gap: 11px;
+		padding: 13px 15px;
+		border: 1px solid #ece5dc;
+		border-radius: 16px;
+		background: rgba(255, 255, 255, 0.94);
+		box-shadow: 0 24px 48px -28px rgba(35, 39, 46, 0.4);
+		backdrop-filter: blur(10px);
+	}
+
+	.float-card strong {
+		display: block;
+		font-family: var(--font-display);
+		font-size: 18px;
+		font-weight: 600;
+		line-height: 1;
+		color: var(--ink);
+	}
+
+	.float-card span {
+		display: block;
+		margin-top: 4px;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: #8a8f99;
+	}
+
+	.float-icon {
+		width: 34px;
+		height: 34px;
+		border-radius: 10px;
+		display: grid;
+		place-items: center;
+		flex: 0 0 auto;
+	}
+
+	.float-icon :global(svg) {
+		width: 17px;
+		height: 17px;
+	}
+
+	.float-icon.orange {
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.float-icon.blue {
+		background: var(--blue-soft);
+		color: var(--blue);
+	}
+
+	.float-a {
+		left: -16px;
+		bottom: 38px;
+	}
+
+	.float-b {
+		right: -12px;
+		top: 34px;
+	}
+
+	@media (max-width: 1080px) {
+		.hero h1 {
+			font-size: clamp(42px, 6vw, 64px);
+		}
+
+		.float-a {
+			left: 8px;
+		}
+
+		.float-b {
+			right: 8px;
+		}
+	}
+
+	@media (max-width: 900px) {
+		.hero {
+			padding-top: 54px;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.hero {
+			padding-top: 42px;
+		}
+
+		.hero h1 {
+			margin-top: 18px;
+			font-size: clamp(38px, 10vw, 48px);
+		}
+
+		.hero-lede {
+			font-size: 15px;
+		}
+
+		.hero-actions {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.hero-actions :global(.btn) {
+			width: 100%;
+		}
+
+		.hero-stage {
+			margin-top: 34px;
+			padding-bottom: 46px;
+		}
+
+		.hero-window {
+			border-radius: 18px;
+		}
+
+		.window-bar {
+			height: 36px;
+			padding: 0 10px;
+		}
+
+		.window-url {
+			max-width: 190px;
+			font-size: 8px;
+		}
+
+		.window-live {
+			font-size: 8px;
+		}
+
+		.carousel-arrow {
+			width: 32px;
+			height: 32px;
+		}
+
+		.carousel-arrow.prev {
+			left: 8px;
+		}
+
+		.carousel-arrow.next {
+			right: 8px;
+		}
+
+		.carousel-arrow :global(svg) {
+			width: 13px;
+			height: 13px;
+		}
+
+		.float-card {
+			display: none;
+		}
+	}
+</style>

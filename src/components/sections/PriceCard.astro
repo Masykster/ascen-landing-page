@@ -1,0 +1,187 @@
+---
+import Button from '../ui/Button.astro';
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+	name: string;
+	amount: string;
+	period: string;
+	description: string;
+	features: string[];
+	ctaLabel: string;
+	ctaHref: string;
+	ctaVariant?: 'primary' | 'ghost';
+	featured?: boolean;
+	badge?: string;
+}
+
+const {
+	name,
+	amount,
+	period,
+	description,
+	features,
+	ctaLabel,
+	ctaHref,
+	ctaVariant = 'ghost',
+	featured = false,
+	badge,
+} = Astro.props;
+---
+
+<div class:list={['price-card', featured && 'price-card--featured', 'reveal']}>
+	{badge && <span class="price-badge">{badge}</span>}
+	<span class="price-name">{name}</span>
+	<div class="price-amount">{amount}</div>
+	<p class="price-period">{period}</p>
+	<p class="price-desc">{description}</p>
+	<ul class="price-list">
+		{features.map((feature) => (
+			<li>
+				<span class="check"><Icon name="check" size={10} /></span>
+				{feature}
+			</li>
+		))}
+	</ul>
+	<Button variant={ctaVariant} href={ctaHref} icon={ctaVariant === 'primary' ? 'arrow' : undefined}>
+		{ctaLabel}
+	</Button>
+</div>
+
+<style>
+	.price-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		padding: 30px;
+		border: 1px solid var(--line-warm);
+		border-radius: var(--radius);
+		background: #fff;
+	}
+
+	.price-card--featured {
+		border-color: var(--ink);
+		background: var(--ink);
+		color: #fff;
+		transform: translateY(-8px);
+		box-shadow: 0 30px 70px -36px rgba(35, 39, 46, 0.7);
+	}
+
+	.price-badge {
+		position: absolute;
+		top: -11px;
+		left: 24px;
+		padding: 5px 10px;
+		border-radius: 999px;
+		background: var(--orange);
+		color: #fff;
+		font-size: 9px;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.price-name {
+		font-size: 13px;
+		font-weight: 800;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.price-card--featured .price-name {
+		color: #fdba74;
+	}
+
+	.price-amount {
+		margin-top: 14px;
+		font-family: var(--font-display);
+		font-size: clamp(36px, 4vw, 48px);
+		font-weight: 600;
+		line-height: 1;
+		letter-spacing: -0.04em;
+		color: var(--ink);
+	}
+
+	.price-card--featured .price-amount {
+		color: #fff;
+	}
+
+	.price-period {
+		margin-top: 6px;
+		font-size: 12px;
+		color: #8a8f99;
+	}
+
+	.price-card--featured .price-period {
+		color: #a9aeb8;
+	}
+
+	.price-desc {
+		margin: 14px 0 0;
+		font-size: 13px;
+		line-height: 1.5;
+		color: var(--muted);
+	}
+
+	.price-card--featured .price-desc {
+		color: #c4c8d0;
+	}
+
+	.price-list {
+		display: grid;
+		gap: 11px;
+		margin: 22px 0 28px;
+		padding: 0;
+		list-style: none;
+	}
+
+	.price-list li {
+		display: flex;
+		align-items: flex-start;
+		gap: 9px;
+		font-size: 13px;
+		line-height: 1.45;
+		color: #4d535e;
+	}
+
+	.price-card--featured .price-list li {
+		color: #d5d8de;
+	}
+
+	.check {
+		width: 18px;
+		height: 18px;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.check :global(svg) {
+		width: 10px;
+		height: 10px;
+	}
+
+	.price-card :global(.btn) {
+		width: 100%;
+		margin-top: auto;
+	}
+
+	.price-card--featured :global(.btn-ghost) {
+		border-color: rgba(255, 255, 255, 0.24);
+		color: #fff;
+	}
+
+	.price-card--featured :global(.btn-ghost:hover) {
+		background: rgba(255, 255, 255, 0.08);
+	}
+
+	@media (max-width: 900px) {
+		.price-card--featured {
+			transform: none;
+		}
+	}
+</style>

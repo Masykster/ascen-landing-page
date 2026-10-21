@@ -1,0 +1,213 @@
+---
+interface Props {
+	title: string;
+	subtitle?: string;
+	timer: string;
+	progress?: number;
+	question: string;
+	options: string[];
+	correctIndex: number;
+	footer?: { left: string; right: string };
+	compact?: boolean;
+}
+
+const {
+	title,
+	subtitle,
+	timer,
+	progress = 45,
+	question,
+	options,
+	correctIndex,
+	footer,
+	compact = false,
+} = Astro.props;
+---
+
+<div class:list={['exam', compact ? 'mock-panel exam--compact' : 'exam-shell exam--full']}>
+	{compact ? (
+		<div class="exam-top">
+			<span class="mock-title">{title}</span>
+			<span class="exam-timer">{timer}</span>
+		</div>
+	) : (
+		<div class="exam-head">
+			<div>
+				<h3>{title}</h3>
+				{subtitle && <p>{subtitle}</p>}
+			</div>
+			<span class="exam-timer-lg">{timer}</span>
+		</div>
+	)}
+
+	<div class:list={[!compact && 'exam-body']}>
+		<div class="exam-progress"><span style={`width:${progress}%`}></span></div>
+		<p class="exam-q">{question}</p>
+		{options.map((option, index) => (
+			<div class:list={['exam-option', index === correctIndex && 'is-correct']}>
+				{option}
+			</div>
+		))}
+	</div>
+
+	{!compact && footer && (
+		<div class="exam-foot">
+			<span>{footer.left}</span>
+			<span class="exam-score"><span></span>{footer.right}</span>
+		</div>
+	)}
+</div>
+
+<style>
+	.exam-shell {
+		padding: 22px;
+		border: 1px solid var(--line-warm);
+		border-radius: 26px;
+		background: #fff;
+		box-shadow: var(--shadow);
+	}
+
+	.exam-top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		margin-bottom: 9px;
+	}
+
+	.exam-timer {
+		padding: 4px 8px;
+		border-radius: 6px;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+		font-family: var(--font-mono);
+		font-size: 9px;
+		font-weight: 700;
+	}
+
+	.exam-progress {
+		height: 5px;
+		margin-bottom: 11px;
+		border-radius: 999px;
+		background: #f2eee8;
+		overflow: hidden;
+	}
+
+	.exam-progress span {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		background: var(--orange);
+	}
+
+	.exam-q {
+		margin-bottom: 9px;
+		font-size: 10px;
+		line-height: 1.45;
+		color: #3f434a;
+	}
+
+	.exam-option {
+		margin-bottom: 5px;
+		padding: 6px 8px;
+		border: 1px solid #ece7df;
+		border-radius: 6px;
+		font-size: 9px;
+		color: #6a707c;
+	}
+
+	.exam-option.is-correct {
+		border-color: #cfe8d2;
+		background: var(--green-soft);
+		color: #2f6b3a;
+		font-weight: 700;
+	}
+
+	.exam-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+		padding-bottom: 14px;
+		border-bottom: 1px solid #f1ece5;
+	}
+
+	.exam-head h3 {
+		margin: 0;
+		font-size: 14px;
+		font-weight: 700;
+		color: var(--ink);
+	}
+
+	.exam-head p {
+		margin: 4px 0 0;
+		font-size: 11px;
+		color: #8a8f99;
+	}
+
+	.exam-timer-lg {
+		padding: 7px 10px;
+		border-radius: 8px;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 700;
+	}
+
+	.exam-body {
+		padding-top: 16px;
+	}
+
+	.exam-body .exam-progress {
+		height: 7px;
+		margin-bottom: 16px;
+	}
+
+	.exam-body .exam-q {
+		margin-bottom: 12px;
+		font-size: 13px;
+		line-height: 1.5;
+		font-weight: 600;
+	}
+
+	.exam-body .exam-option {
+		margin-bottom: 7px;
+		padding: 9px 11px;
+		border-radius: 8px;
+		font-size: 11px;
+	}
+
+	.exam-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 16px;
+		padding-top: 14px;
+		border-top: 1px solid #f1ece5;
+		font-size: 10px;
+		color: #8a8f99;
+	}
+
+	.exam-score {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+		font-weight: 700;
+		color: #2f6b3a;
+	}
+
+	.exam-score span {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: #46a758;
+	}
+
+	@media (max-width: 640px) {
+		.exam-shell {
+			padding: 16px;
+			border-radius: 20px;
+		}
+	}
+</style>

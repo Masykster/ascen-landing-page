@@ -1,0 +1,68 @@
+---
+interface Props {
+	reverse?: boolean;
+	class?: string;
+}
+
+const { reverse = false, class: className } = Astro.props;
+---
+
+<div class:list={['container', 'split', reverse && 'split--reverse', className]}>
+	<div class="split-media reveal">
+		<slot name="media" />
+	</div>
+	<div class="split-copy reveal">
+		<slot />
+	</div>
+</div>
+
+<style>
+	.split {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+		gap: 64px;
+		align-items: center;
+	}
+
+	.split--reverse .split-media {
+		order: 2;
+	}
+
+	.split-media {
+		position: relative;
+	}
+
+	.split-copy > :global(h2) {
+		margin: 14px 0 0;
+		font-family: var(--font-display);
+		font-weight: 600;
+		font-size: clamp(32px, 3.6vw, 46px);
+		line-height: 1.06;
+		letter-spacing: -0.04em;
+		color: var(--ink);
+	}
+
+	.split-copy > :global(p) {
+		margin: 16px 0 0;
+		font-size: 16px;
+		line-height: 1.65;
+		color: var(--muted);
+	}
+
+	@media (max-width: 1080px) {
+		.split {
+			gap: 44px;
+		}
+	}
+
+	@media (max-width: 900px) {
+		.split {
+			grid-template-columns: 1fr;
+			gap: 34px;
+		}
+
+		.split--reverse .split-media {
+			order: 0;
+		}
+	}
+</style>

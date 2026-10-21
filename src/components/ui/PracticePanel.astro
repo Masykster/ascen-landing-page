@@ -1,0 +1,205 @@
+---
+interface PracticeRow {
+	label: string;
+	value: number;
+}
+
+interface Props {
+	title: string;
+	subtitle?: string;
+	badge: string;
+	chips: string[];
+	rows: PracticeRow[];
+	footer?: { left: string; right: string };
+	compact?: boolean;
+}
+
+const { title, subtitle, badge, chips, rows, footer, compact = false } = Astro.props;
+---
+
+<div
+	class:list={['practice', compact ? 'mock-panel practice--compact' : 'practice-shell practice--full']}
+>
+	{compact ? (
+		<div class="mock-head">
+			<span class="mock-title">{title}</span>
+			<span class="mock-tag">{badge}</span>
+		</div>
+	) : (
+		<div class="exam-head">
+			<div>
+				<h3>{title}</h3>
+				{subtitle && <p>{subtitle}</p>}
+			</div>
+			<span class="practice-badge">{badge}</span>
+		</div>
+	)}
+
+	<div class="practice-chips">
+		{chips.map((chip) => <span class="chip">{chip}</span>)}
+	</div>
+
+	{rows.map((row) => (
+		<div class="practice-row">
+			<span class="practice-label">{row.label}</span>
+			<span class="practice-meta">{row.value}%</span>
+			<span class="practice-bar"><span style={`width:${row.value}%`}></span></span>
+		</div>
+	))}
+
+	{!compact && footer && (
+		<div class="practice-foot">
+			<span>{footer.left}</span>
+			<span>{footer.right}</span>
+		</div>
+	)}
+</div>
+
+<style>
+	.practice-shell {
+		padding: 22px;
+		border: 1px solid var(--line-warm);
+		border-radius: 26px;
+		background: #fff;
+		box-shadow: var(--shadow);
+	}
+
+	.mock-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 8px;
+		margin-bottom: 10px;
+	}
+
+	.practice-chips {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 5px;
+		margin-bottom: 11px;
+	}
+
+	.chip {
+		padding: 4px 8px;
+		border-radius: 999px;
+		background: var(--blue-soft);
+		color: var(--blue);
+		font-size: 9px;
+		font-weight: 700;
+	}
+
+	.practice-row {
+		display: grid;
+		grid-template-columns: 1fr 58px;
+		gap: 10px;
+		align-items: center;
+		padding: 7px 0;
+	}
+
+	.practice-label {
+		font-size: 10px;
+		font-weight: 600;
+		color: #3f434a;
+	}
+
+	.practice-meta {
+		font-family: var(--font-mono);
+		font-size: 8px;
+		color: #8a8f99;
+		text-align: right;
+	}
+
+	.practice-bar {
+		grid-column: 1 / -1;
+		height: 4px;
+		border-radius: 999px;
+		background: #f2eee8;
+		overflow: hidden;
+	}
+
+	.practice-bar span {
+		display: block;
+		height: 100%;
+		border-radius: 999px;
+		background: var(--blue);
+	}
+
+	.exam-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+		margin-bottom: 16px;
+		padding-bottom: 14px;
+		border-bottom: 1px solid #f1ece5;
+	}
+
+	.exam-head h3 {
+		margin: 0;
+		font-size: 14px;
+		font-weight: 700;
+		color: var(--ink);
+	}
+
+	.exam-head p {
+		margin: 4px 0 0;
+		font-size: 11px;
+		color: #8a8f99;
+	}
+
+	.practice-badge {
+		padding: 7px 10px;
+		border-radius: 8px;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 700;
+	}
+
+	.practice--full .practice-chips {
+		gap: 8px;
+		margin-bottom: 16px;
+	}
+
+	.practice--full .chip {
+		padding: 6px 10px;
+		font-size: 10px;
+	}
+
+	.practice--full .practice-row {
+		grid-template-columns: 1fr 90px;
+		gap: 12px;
+		padding: 11px 0;
+	}
+
+	.practice--full .practice-label {
+		font-size: 12px;
+	}
+
+	.practice--full .practice-meta {
+		font-size: 9px;
+	}
+
+	.practice--full .practice-bar {
+		height: 6px;
+	}
+
+	.practice-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-top: 16px;
+		padding-top: 14px;
+		border-top: 1px solid #f1ece5;
+		font-size: 10px;
+		color: #8a8f99;
+	}
+
+	@media (max-width: 640px) {
+		.practice-shell {
+			padding: 16px;
+			border-radius: 20px;
+		}
+	}
+</style>

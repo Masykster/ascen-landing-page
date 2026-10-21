@@ -1,0 +1,145 @@
+---
+import Icon from '../ui/Icon.astro';
+
+interface Props {
+	kicker: string;
+	icon: string;
+	title: string;
+	description: string;
+	linkLabel: string;
+	href: string;
+	variant?: 'orange' | 'blue' | 'cream';
+	class?: string;
+}
+
+const {
+	kicker,
+	icon,
+	title,
+	description,
+	linkLabel,
+	href,
+	variant = 'orange',
+	class: className,
+} = Astro.props;
+---
+
+<a
+	class:list={['feature-card', `feature-card--${variant}`, className]}
+	href={href}
+	target="_blank"
+	rel="noopener"
+>
+	<span class="card-kicker"><Icon name={icon} size={12} />{kicker}</span>
+	<h3>{title}</h3>
+	<p>{description}</p>
+	<span class="card-link">{linkLabel} <Icon name="arrow" size={14} /></span>
+	<div class="mock">
+		<slot />
+	</div>
+</a>
+
+<style>
+	.feature-card {
+		display: flex;
+		flex-direction: column;
+		min-height: 452px;
+		padding: 28px;
+		border: 1px solid var(--line-warm);
+		border-radius: var(--radius);
+		background: #fff;
+		transition: transform 0.25s ease, box-shadow 0.25s ease;
+	}
+
+	.feature-card--orange {
+		background: #fdf1e6;
+	}
+
+	.feature-card--blue {
+		background: #eef4ff;
+		border-color: #dde8fb;
+	}
+
+	.feature-card--cream {
+		background: #fdf9f4;
+	}
+
+	.feature-card:hover {
+		transform: translateY(-4px);
+		box-shadow: var(--shadow);
+	}
+
+	.card-kicker {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+		align-self: flex-start;
+		padding: 5px 10px;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.8);
+		border: 1px solid rgba(35, 39, 46, 0.08);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: #8a5a35;
+	}
+
+	.feature-card--blue .card-kicker {
+		color: var(--blue);
+	}
+
+	.feature-card h3 {
+		margin: 18px 0 0;
+		font-family: var(--font-display);
+		font-size: 26px;
+		font-weight: 600;
+		line-height: 1.12;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.feature-card p {
+		margin: 12px 0 0;
+		font-size: 14px;
+		line-height: 1.6;
+		color: #5d636e;
+	}
+
+	.card-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+		margin-top: 18px;
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--ink);
+	}
+
+	.card-link :global(svg) {
+		width: 14px;
+		height: 14px;
+		transition: transform 0.2s ease;
+	}
+
+	.card-link:hover :global(svg) {
+		transform: translateX(3px);
+	}
+
+	.mock {
+		margin-top: auto;
+		padding-top: 26px;
+	}
+
+	@media (max-width: 900px) {
+		.feature-card {
+			min-height: 0;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.feature-card {
+			padding: 22px;
+		}
+	}
+</style>

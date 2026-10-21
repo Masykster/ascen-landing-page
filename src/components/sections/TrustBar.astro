@@ -1,0 +1,83 @@
+---
+import { Image } from 'astro:assets';
+import unesa from '../../assets/images/Unesa.png';
+import pibt from '../../assets/images/PIBT.png';
+import datanusa from '../../assets/images/Datanusa.png';
+
+const partners = [
+	{ src: unesa, alt: 'Universitas Negeri Surabaya' },
+	{ src: pibt, alt: 'PIBT Unesa' },
+	{ src: datanusa, alt: 'Inkubator Bisnis Datanusa' },
+];
+---
+
+<section class="trust" aria-label="Mitra Ascendemy">
+	<div class="container trust-inner">
+		<span class="trust-label">Didukung oleh</span>
+		<div class="trust-logos">
+			{partners.map((partner) => (
+				<Image src={partner.src} alt={partner.alt} width={56} height={56} />
+			))}
+		</div>
+	</div>
+</section>
+
+<style>
+	.trust {
+		padding: 26px 0;
+		background: #fff;
+		border-top: 1px solid var(--line-warm);
+		border-bottom: 1px solid var(--line-warm);
+	}
+
+	.trust-inner {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 34px;
+		flex-wrap: wrap;
+	}
+
+	.trust-label {
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: #a39c93;
+	}
+
+	.trust-logos {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 38px;
+		flex-wrap: wrap;
+	}
+
+	.trust-logos :global(img) {
+		height: 28px;
+		width: auto;
+		opacity: 0.58;
+		filter: grayscale(1);
+		transition: opacity 0.2s ease, filter 0.2s ease;
+	}
+
+	.trust-logos :global(img:hover) {
+		opacity: 1;
+		filter: none;
+	}
+
+	@media (max-width: 640px) {
+		.trust-inner {
+			gap: 18px;
+		}
+
+		.trust-logos {
+			gap: 22px;
+		}
+
+		.trust-logos :global(img) {
+			height: 22px;
+		}
+	}
+</style>

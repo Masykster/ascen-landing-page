@@ -1,0 +1,47 @@
+@font-face {
+	font-family: "Geist Mono";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("../assets/fonts/GeistMono-latin-b81f341708.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "UniversalSans";
+	font-style: normal;
+	font-weight: 500;
+	font-display: swap;
+	src: url("../assets/fonts/UniversalSans-500-e8511e712b.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "UniversalSans";
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url("../assets/fonts/UniversalSans-600-8fbc10ca69.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "UniversalSans";
+	font-style: normal;
+	font-weight: 800;
+	font-display: swap;
+	src: url("../assets/fonts/UniversalSans-800-3b3816e279.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Garnett";
+	font-style: normal;
+	font-weight: 600;
+	font-display: swap;
+	src: url("../assets/fonts/Garnett-Semibold-3be7b2feae.woff2") format("woff2");
+}
+
+@font-face {
+	font-family: "Garnett";
+	font-style: normal;
+	font-weight: 700;
+	font-display: swap;
+	src: url("../assets/fonts/Garnett-Semibold-3be7b2feae.woff2") format("woff2");
+}

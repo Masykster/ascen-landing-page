@@ -1,0 +1,161 @@
+---
+import news1 from '../../assets/images/news-1.jpg';
+import news2 from '../../assets/images/news-2.jpg';
+import news3 from '../../assets/images/news-3.jpg';
+import news4 from '../../assets/images/news-4.jpg';
+import Button from '../ui/Button.astro';
+import Eyebrow from '../ui/Eyebrow.astro';
+import NewsFeaturedCard from './NewsFeaturedCard.astro';
+import NewsListItem from './NewsListItem.astro';
+
+const featured = {
+	href: 'https://ascendemy.id/news/news-detail.php?slug=olimpiade-matematika-nasional-gratis-untuk-siswa-sma-peserta-dapat-e-sertifikat',
+	image: news1,
+	alt: 'Banner Olimpiade Matematika Nasional Ascendemy 2026',
+	date: '4 Agustus 2026',
+	category: 'Kompetisi',
+	title: 'Olimpiade Matematika Nasional gratis untuk siswa SMA, peserta dapat e-sertifikat',
+	excerpt:
+		'Ascendemy resmi membuka pendaftaran Ascendemy Mathematics Olympiad (AMO) 2026, kompetisi matematika tingkat nasional untuk siswa SMA/MA/SMK di seluruh Indonesia.',
+	pinned: true,
+};
+
+const newsItems = [
+	{
+		href: 'https://ascendemy.id/news/news-detail.php?slug=siswa-smk-wajib-ikut-tka-empat-hari-bagaimana-jika-sedang-pkl',
+		image: news2,
+		alt: 'Siswa SMK mengikuti pembelajaran di laboratorium',
+		date: '13 Oktober 2026',
+		category: 'TKA',
+		title: 'Siswa SMK wajib ikut TKA empat hari, bagaimana jika sedang PKL?',
+	},
+	{
+		href: 'https://ascendemy.id/news/news-detail.php?slug=dari-sains-hingga-ips-686-finalis-unjuk-kemampuan-di-osn-2026',
+		image: news3,
+		alt: 'Finalis Olimpiade Sains Nasional 2026',
+		date: '12 Oktober 2026',
+		category: 'OSN',
+		title: 'Dari sains hingga IPS, 686 finalis unjuk kemampuan di OSN 2026',
+	},
+	{
+		href: 'https://ascendemy.id/news/news-detail.php?slug=hasil-tka-smasmk-2026-bisa-diakses-sendiri-catat-tanggal-pengumumannya',
+		image: news4,
+		alt: 'Halaman informasi Tes Kemampuan Akademik',
+		date: '12 Oktober 2026',
+		category: 'TKA',
+		title: 'Hasil TKA SMA/SMK 2026 bisa diakses sendiri, catat tanggal pengumumannya',
+	},
+];
+---
+
+<section class="section section--cream" id="berita">
+	<div class="container">
+		<div class="section-head section-head--split reveal">
+			<div>
+				<Eyebrow tone="blue">Kabar Ascendemy</Eyebrow>
+				<h2>Update terbaru dari dunia pendidikan</h2>
+				<p>
+					Berita seputar TKA, olimpiade, dan tips belajar untuk membantumu mengambil keputusan
+					yang tepat.
+				</p>
+			</div>
+			<Button variant="ghost" href="https://ascendemy.id/news/news" icon="arrow">
+				Semua berita
+			</Button>
+		</div>
+
+		<div class="news-grid">
+			<NewsFeaturedCard {...featured} />
+
+			<div class="news-list reveal">
+				{newsItems.map((item) => <NewsListItem {...item} />)}
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.section-head {
+		max-width: 760px;
+		margin: 0 auto 48px;
+		text-align: center;
+	}
+
+	.section-head h2 {
+		margin: 14px 0 0;
+		font-family: var(--font-display);
+		font-weight: 600;
+		font-size: clamp(34px, 4.2vw, 52px);
+		line-height: 1.06;
+		letter-spacing: -0.04em;
+		color: var(--ink);
+	}
+
+	.section-head p {
+		margin: 16px auto 0;
+		max-width: 620px;
+		font-size: 16px;
+		line-height: 1.65;
+		color: var(--muted);
+	}
+
+	.section-head--split {
+		max-width: none;
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 32px;
+		margin-bottom: 38px;
+		text-align: left;
+	}
+
+	.section-head--split > div {
+		max-width: 640px;
+	}
+
+	.section-head--split h2 {
+		margin-bottom: 0;
+	}
+
+	.section-head--split p {
+		margin-left: 0;
+	}
+
+	.news-grid {
+		display: grid;
+		grid-template-columns: 1.08fr 0.92fr;
+		gap: 26px;
+		align-items: start;
+	}
+
+	.news-list {
+		overflow: hidden;
+		border: 1px solid var(--line-warm);
+		border-radius: var(--radius);
+		background: #fff;
+	}
+
+	@media (max-width: 900px) {
+		.news-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.section-head {
+			margin-bottom: 32px;
+		}
+
+		.section-head--split {
+			display: block;
+		}
+
+		.section-head--split :global(.btn) {
+			margin-top: 18px;
+		}
+
+		.section-head h2 {
+			font-size: clamp(30px, 8vw, 38px);
+		}
+	}
+</style>

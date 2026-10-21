@@ -1,0 +1,63 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+	items: string[];
+	tone?: 'orange' | 'blue';
+	class?: string;
+}
+
+const { items, tone = 'orange', class: className } = Astro.props;
+---
+
+<ul class:list={['check-list', className]}>
+	{items.map((item) => (
+		<li>
+			<span class:list={['check', tone === 'blue' && 'blue']}>
+				<Icon name="check" size={11} />
+			</span>
+			{item}
+		</li>
+	))}
+</ul>
+
+<style>
+	.check-list {
+		display: grid;
+		gap: 12px;
+		margin: 22px 0 28px;
+		padding: 0;
+		list-style: none;
+	}
+
+	.check-list li {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		font-size: 14px;
+		line-height: 1.5;
+		color: #4d535e;
+	}
+
+	.check {
+		width: 20px;
+		height: 20px;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		margin-top: 1px;
+		border-radius: 50%;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.check.blue {
+		background: var(--blue-soft);
+		color: var(--blue);
+	}
+
+	.check :global(svg) {
+		width: 11px;
+		height: 11px;
+	}
+</style>

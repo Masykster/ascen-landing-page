@@ -1,0 +1,132 @@
+<div
+	class="cookie"
+	id="cookie-banner"
+	role="dialog"
+	aria-live="polite"
+	aria-label="Persetujuan cookie"
+	hidden
+>
+	<p>
+		Kami menggunakan cookie untuk statistik kunjungan anonim. Selengkapnya di <a
+			href="https://ascendemy.id/kebijakan-privasi">Kebijakan Privasi</a
+		>.
+	</p>
+	<div class="cookie-actions">
+		<button type="button" data-cookie="declined">Tolak</button>
+		<button type="button" class="accept" data-cookie="accepted">Terima</button>
+	</div>
+</div>
+
+<script>
+	const banner = document.getElementById('cookie-banner');
+
+	if (banner) {
+		const key = 'ascendemy-cookie-consent';
+		let stored: string | null = null;
+
+		try {
+			stored = window.localStorage.getItem(key);
+		} catch {
+			stored = null;
+		}
+
+		if (stored) {
+			banner.hidden = true;
+		} else {
+			window.setTimeout(() => {
+				banner.hidden = false;
+			}, 900);
+
+			banner.addEventListener('click', (event) => {
+				const target = event.target as HTMLElement;
+				const button = target.closest<HTMLElement>('[data-cookie]');
+				if (!button) return;
+
+				try {
+					window.localStorage.setItem(key, button.dataset.cookie ?? '');
+				} catch {
+					/* storage can be unavailable */
+				}
+
+				banner.hidden = true;
+			});
+		}
+	}
+</script>
+
+<style>
+	.cookie {
+		position: fixed;
+		left: 50%;
+		bottom: 20px;
+		z-index: 200;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 14px;
+		flex-wrap: wrap;
+		width: min(600px, calc(100% - 32px));
+		padding: 15px 17px;
+		border: 1px solid var(--line-warm);
+		border-radius: 18px;
+		background: #fff;
+		box-shadow: 0 28px 70px -28px rgba(35, 39, 46, 0.45);
+		transform: translateX(-50%);
+	}
+
+	.cookie[hidden] {
+		display: none;
+	}
+
+	.cookie p {
+		flex: 1;
+		min-width: 230px;
+		margin: 0;
+		font-size: 11px;
+		line-height: 1.5;
+		color: var(--muted);
+	}
+
+	.cookie a {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.cookie-actions {
+		display: flex;
+		gap: 7px;
+	}
+
+	.cookie button {
+		padding: 8px 13px;
+		border: 1px solid #e3ded6;
+		border-radius: 999px;
+		background: #fff;
+		color: var(--text);
+		font-size: 11px;
+		font-weight: 700;
+		cursor: pointer;
+	}
+
+	.cookie button.accept {
+		border-color: var(--orange);
+		background: var(--orange);
+		color: #fff;
+	}
+
+	@media (max-width: 640px) {
+		.cookie {
+			bottom: 12px;
+			padding: 13px;
+			border-radius: 14px;
+		}
+
+		.cookie-actions {
+			width: 100%;
+		}
+
+		.cookie-actions button {
+			flex: 1;
+		}
+	}
+</style>

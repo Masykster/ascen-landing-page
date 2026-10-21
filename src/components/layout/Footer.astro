@@ -1,0 +1,324 @@
+---
+import { Image } from 'astro:assets';
+import logo from '../../assets/images/logo2.svg';
+import unesa from '../../assets/images/Unesa.png';
+import datanusa from '../../assets/images/Datanusa.png';
+import qris from '../../assets/images/qris.png';
+import bsi from '../../assets/images/bsi.svg';
+import mandiri from '../../assets/images/mandiri.svg';
+import bni from '../../assets/images/bni.svg';
+import bri from '../../assets/images/bri.svg';
+import permata from '../../assets/images/permata.svg';
+import cimb from '../../assets/images/cimb.svg';
+import gopay from '../../assets/images/gopay.svg';
+import { contactLines, navLinks, socialLinks } from '../../data/site';
+import Icon from '../ui/Icon.astro';
+
+const year = new Date().getFullYear();
+
+const learnLinks = [
+	{ label: 'Latihan soal', href: '#latihan' },
+	{ label: 'Tryout TKA', href: '#tryout' },
+	{ label: 'Kompetisi', href: '#kompetisi' },
+	{ label: 'Semua paket', href: '#harga' },
+	{ label: 'Berita', href: '#berita' },
+];
+
+const paymentLogos = [
+	{ src: qris, alt: 'QRIS' },
+	{ src: bsi, alt: 'BSI' },
+	{ src: mandiri, alt: 'Mandiri' },
+	{ src: bni, alt: 'BNI' },
+	{ src: bri, alt: 'BRI' },
+	{ src: permata, alt: 'Permata Bank' },
+	{ src: cimb, alt: 'CIMB Niaga' },
+	{ src: gopay, alt: 'GoPay' },
+];
+---
+
+<footer class="site-footer">
+	<div class="container">
+		<div class="footer-grid">
+			<div class="footer-brand">
+				<a class="brand" href="#top" aria-label="Ascendemy">
+					<img src={logo.src} alt="Ascendemy" width="736" height="291" />
+				</a>
+				<p>
+					Platform belajar, tryout, dan kompetisi untuk siswa Indonesia. Dikelola oleh Ascendemy
+					bersama PIBT Unesa.
+				</p>
+				<div class="socials">
+					{socialLinks.map((social) => (
+						<a
+							href={social.href}
+							target="_blank"
+							rel="noopener"
+							aria-label={social.label}
+						>
+							<Icon name={social.icon} size={14} />
+						</a>
+					))}
+				</div>
+				<div class="footer-partners">
+					<a href="https://unesa.ac.id/" target="_blank" rel="noopener">
+						<Image src={unesa} alt="Universitas Negeri Surabaya" width={56} height={56} loading="lazy" />
+					</a>
+					<a href="https://sipensi.umkm.go.id/inkubators/11" target="_blank" rel="noopener">
+						<Image src={datanusa} alt="Inkubator Bisnis Datanusa" width={56} height={56} loading="lazy" />
+					</a>
+				</div>
+			</div>
+
+			<div class="footer-col">
+				<h4>Belajar</h4>
+				<ul class="footer-links">
+					{learnLinks.map((link) => (
+						<li><a href={link.href}>{link.label}</a></li>
+					))}
+				</ul>
+			</div>
+
+			<div class="footer-col">
+				<h4>Kontak</h4>
+				{contactLines.map((line) => (
+					<div class="contact-line">
+						<Icon name={line.icon} size={14} />
+						{line.href ? (
+							<a
+								href={line.href}
+								target={line.external ? '_blank' : undefined}
+								rel={line.external ? 'noopener' : undefined}
+							>
+								{line.label}
+							</a>
+						) : (
+							<span>{line.label}</span>
+						)}
+					</div>
+				))}
+			</div>
+
+			<div class="footer-col">
+				<h4>Pembayaran</h4>
+				<p class="payments-note">Pembayaran aman melalui channel resmi.</p>
+				<div class="payments">
+					{paymentLogos.map((payment) =>
+						payment.src.format === 'svg' ? (
+							<img src={payment.src.src} alt={payment.alt} loading="lazy" />
+						) : (
+							<Image src={payment.src} alt={payment.alt} height={18} loading="lazy" />
+						),
+					)}
+				</div>
+			</div>
+		</div>
+
+		<div class="footer-bottom">
+			<span>© {year} Ascendemy. Seluruh hak cipta dilindungi.</span>
+			<span>
+				<a href="https://ascendemy.id/kebijakan-privasi">Kebijakan Privasi</a>
+				&nbsp;·&nbsp;
+				<a href="https://ascendemy.id/syarat-ketentuan">Syarat &amp; Ketentuan</a>
+			</span>
+		</div>
+	</div>
+</footer>
+
+<style>
+	.site-footer {
+		padding: 72px 0 28px;
+		background: var(--cream);
+		border-top: 1px solid var(--line-warm);
+	}
+
+	.footer-grid {
+		display: grid;
+		grid-template-columns: 1.35fr 0.75fr 1.35fr 0.75fr;
+		gap: 40px;
+	}
+
+	.footer-brand .brand {
+		display: inline-flex;
+		align-items: center;
+		flex: 0 0 auto;
+		margin-bottom: 16px;
+		padding: 7px 14px;
+		border-radius: 999px;
+		background: var(--ink);
+	}
+
+	.footer-brand .brand img {
+		width: 112px;
+		height: auto;
+	}
+
+	.footer-brand p {
+		max-width: 300px;
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.6;
+		color: var(--muted);
+	}
+
+	.socials {
+		display: flex;
+		gap: 8px;
+		margin-top: 18px;
+		flex-wrap: wrap;
+	}
+
+	.socials a {
+		width: 32px;
+		height: 32px;
+		display: grid;
+		place-items: center;
+		border: 1px solid #e3dbd0;
+		border-radius: 50%;
+		color: #5d636e;
+		transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+	}
+
+	.socials a:hover {
+		background: #fff;
+		border-color: #d6cbbd;
+		color: var(--orange-deep);
+	}
+
+	.socials :global(svg) {
+		width: 14px;
+		height: 14px;
+	}
+
+	.footer-col h4 {
+		margin: 0 0 16px;
+		font-size: 11px;
+		font-weight: 800;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: #9a938a;
+	}
+
+	.footer-links {
+		display: grid;
+		gap: 10px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.footer-links a {
+		font-size: 13px;
+		font-weight: 600;
+		color: #5d636e;
+		transition: color 0.2s ease;
+	}
+
+	.footer-links a:hover {
+		color: var(--ink);
+	}
+
+	.contact-line {
+		display: flex;
+		gap: 9px;
+		margin-bottom: 10px;
+		font-size: 12px;
+		line-height: 1.55;
+		color: #5d636e;
+	}
+
+	.contact-line :global(svg) {
+		width: 14px;
+		height: 14px;
+		flex: 0 0 auto;
+		margin-top: 2px;
+		color: #a39c93;
+	}
+
+	.footer-partners {
+		display: flex;
+		align-items: center;
+		gap: 18px;
+		flex-wrap: wrap;
+		margin-top: 18px;
+	}
+
+	.footer-partners :global(img) {
+		height: 26px;
+		width: auto;
+		opacity: 0.6;
+		filter: grayscale(1);
+	}
+
+	.payments-note {
+		margin: 0;
+		font-size: 12px;
+		line-height: 1.55;
+		color: #6a707c;
+	}
+
+	.payments {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-wrap: wrap;
+		margin-top: 14px;
+	}
+
+	.payments :global(img) {
+		height: 18px;
+		width: auto;
+		padding: 2px 4px;
+		border: 1px solid var(--line-warm);
+		border-radius: 4px;
+		background: #fff;
+	}
+
+	.footer-bottom {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20px;
+		flex-wrap: wrap;
+		margin-top: 48px;
+		padding-top: 20px;
+		border-top: 1px solid #e9e0d4;
+		font-size: 11px;
+		color: #9a938a;
+	}
+
+	@media (max-width: 1080px) {
+		.footer-grid {
+			grid-template-columns: 1.2fr 0.8fr 1.2fr;
+		}
+
+		.footer-col:last-child {
+			grid-column: span 1;
+		}
+	}
+
+	@media (max-width: 900px) {
+		.footer-grid {
+			grid-template-columns: 1fr 1fr;
+			gap: 32px;
+		}
+
+		.footer-col:last-child {
+			grid-column: auto;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.site-footer {
+			padding: 54px 0 24px;
+		}
+
+		.footer-grid {
+			grid-template-columns: 1fr;
+			gap: 28px;
+		}
+
+		.footer-bottom {
+			margin-top: 32px;
+		}
+	}
+</style>

@@ -1,0 +1,34 @@
+---
+import Footer from '../components/layout/Footer.astro';
+import Header from '../components/layout/Header.astro';
+import CompetitionSection from '../components/sections/CompetitionSection.astro';
+import Features from '../components/sections/Features.astro';
+import FinalCta from '../components/sections/FinalCta.astro';
+import Hero from '../components/sections/Hero.astro';
+import NewsSection from '../components/sections/NewsSection.astro';
+import PracticeSection from '../components/sections/PracticeSection.astro';
+import PricingSection from '../components/sections/PricingSection.astro';
+import StatsBand from '../components/sections/StatsBand.astro';
+import TrustBar from '../components/sections/TrustBar.astro';
+import TryoutSection from '../components/sections/TryoutSection.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout>
+	<Header />
+
+	<main id="main-content">
+		<Hero />
+		<TrustBar />
+		<Features />
+		<NewsSection />
+		<CompetitionSection />
+		<StatsBand />
+		<TryoutSection />
+		<PracticeSection />
+		<PricingSection />
+		<FinalCta />
+	</main>
+
+	<Footer />
+</BaseLayout>

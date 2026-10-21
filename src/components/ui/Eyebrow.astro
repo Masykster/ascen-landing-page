@@ -1,0 +1,49 @@
+---
+interface Props {
+	tone?: 'orange' | 'blue';
+	class?: string;
+}
+
+const { tone = 'orange', class: className } = Astro.props;
+---
+
+<span class:list={['eyebrow', tone === 'blue' && 'eyebrow--blue', className]}>
+	<span class="dot"></span>
+	<slot />
+</span>
+
+<style>
+	.eyebrow {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		padding: 7px 13px;
+		border: 1px solid #ecdfd1;
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.72);
+		color: #8a5a35;
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.eyebrow .dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: var(--orange);
+		box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.12);
+	}
+
+	.eyebrow--blue {
+		color: var(--blue);
+		border-color: #dbe7ff;
+		background: rgba(238, 244, 255, 0.8);
+	}
+
+	.eyebrow--blue .dot {
+		background: var(--blue);
+		box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+	}
+</style>

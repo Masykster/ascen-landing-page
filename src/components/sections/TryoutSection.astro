@@ -1,0 +1,38 @@
+---
+import Button from '../ui/Button.astro';
+import CheckList from '../ui/CheckList.astro';
+import ExamPanel from '../ui/ExamPanel.astro';
+import Eyebrow from '../ui/Eyebrow.astro';
+import SplitLayout from '../ui/SplitLayout.astro';
+
+const benefits = [
+	'Timer dan navigasi soal seperti CBT asli',
+	'Analisis skor per mata pelajaran',
+	'Pembahasan jawaban setelah ujian',
+	'Paket TKA SMP mulai Rp20.000',
+];
+---
+
+<section class="section section--soft" id="tryout">
+	<SplitLayout reverse>
+		<ExamPanel
+			slot="media"
+			title="Tryout TKA · Matematika"
+			subtitle="Paket TKA-5 SMP · 2 ujian · akses penuh"
+			timer="00:42:18"
+			question="Jika 2x + 5 = 17, nilai x adalah…"
+			options={['A. 4', 'B. 5', 'C. 6', 'D. 7']}
+			correctIndex={2}
+			footer={{ left: 'Soal 9 dari 20', right: 'Skor sementara 78' }}
+		/>
+
+		<Eyebrow>Tryout</Eyebrow>
+		<h2>Rasakan ujian sesungguhnya, sebelum hari-H</h2>
+		<p>
+			Tryout TKA dan UTBK dengan antarmuka Computer Based Test, timer, dan analisis hasil. Ketahui
+			posisimu lebih awal, lalu perbaiki dengan latihan yang tepat.
+		</p>
+		<CheckList items={benefits} />
+		<Button href="https://cbt.ascendemy.id/tryout" icon="arrow">Mulai tryout</Button>
+	</SplitLayout>
+</section>

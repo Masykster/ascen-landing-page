@@ -1,0 +1,35 @@
+---
+import Icon from './Icon.astro';
+
+interface Props {
+	href: string;
+	variant?: 'primary' | 'ghost' | 'dark';
+	size?: 'md' | 'lg';
+	icon?: string;
+	external?: boolean;
+	class?: string;
+}
+
+const {
+	href,
+	variant = 'primary',
+	size = 'md',
+	icon,
+	external = false,
+	class: className,
+} = Astro.props;
+
+const classes = ['btn', `btn-${variant}`, size === 'lg' && 'btn-lg', className]
+	.filter(Boolean)
+	.join(' ');
+---
+
+<a
+	class={classes}
+	href={href}
+	target={external ? '_blank' : undefined}
+	rel={external ? 'noopener' : undefined}
+>
+	<slot />
+	{icon && <Icon name={icon} />}
+</a>
