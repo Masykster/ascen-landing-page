@@ -15,24 +15,28 @@ const benefits = [
 
 <section class="section section--soft" id="tryout">
 	<SplitLayout reverse>
-		<ExamPanel
-			slot="media"
-			title="Tryout TKA · Matematika"
-			subtitle="Paket TKA-5 SMP · 2 ujian · akses penuh"
-			timer="00:42:18"
-			question="Jika 2x + 5 = 17, nilai x adalah…"
-			options={['A. 4', 'B. 5', 'C. 6', 'D. 7']}
-			correctIndex={2}
-			footer={{ left: 'Soal 9 dari 20', right: 'Skor sementara 78' }}
-		/>
+		<div slot="media" class="panel-stage panel-stage--orange">
+			<ExamPanel
+				title="Tryout TKA · Matematika"
+				subtitle="2 ujian · akses penuh"
+				timer="00:42:18"
+				question="Jika 2x + 5 = 17, nilai x adalah…"
+				options={['A. 4', 'B. 5', 'C. 6', 'D. 7']}
+				correctIndex={2}
+				progress={45}
+				currentQuestion={9}
+				totalQuestions={20}
+				footer={{ left: 'Sisa 11 soal · 42 menit', right: 'Skor sementara 78' }}
+			/>
+		</div>
 
-		<Eyebrow>Tryout</Eyebrow>
-		<h2>Rasakan ujian sesungguhnya, sebelum hari-H</h2>
-		<p>
+		<Eyebrow class="reveal">Tryout</Eyebrow>
+		<h2 class="reveal">Rasakan ujian sesungguhnya, sebelum hari-H</h2>
+		<p class="reveal">
 			Tryout TKA dan UTBK dengan antarmuka Computer Based Test, timer, dan analisis hasil. Ketahui
 			posisimu lebih awal, lalu perbaiki dengan latihan yang tepat.
 		</p>
-		<CheckList items={benefits} />
-		<Button href="https://cbt.ascendemy.id/tryout" icon="arrow">Mulai tryout</Button>
+		<CheckList class="reveal reveal-list" items={benefits} />
+		<Button class="reveal" href="https://cbt.ascendemy.id/tryout" icon="arrow">Mulai tryout</Button>
 	</SplitLayout>
 </section>

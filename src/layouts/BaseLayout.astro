@@ -37,27 +37,91 @@ const {
 		<CookieBanner />
 
 		<script>
+			// Stagger otomatis: container bertanda [data-stagger] memberi delay per anak reveal
+			document.querySelectorAll<HTMLElement>('[data-stagger]').forEach((container) => {
+				const children = Array.from(container.children) as HTMLElement[];
+				children
+					.filter((child) => child.classList.contains('reveal'))
+					.forEach((child, index) => {
+						child.style.setProperty('--reveal-delay', `${Math.min(index * 80, 360)}ms`);
+					});
+			});
+
 			const items = Array.from(document.querySelectorAll<HTMLElement>('.reveal'));
 			const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+			// Arrival emphasis: tandai section tujuan sebentar saat anchor diklik
+			let pendingArrival: HTMLElement | null = null;
+
+			const triggerArrival = (section: HTMLElement) => {
+				section.classList.remove('is-arriving');
+				void section.offsetWidth; // reflow supaya animasi bisa diputar ulang
+				section.classList.add('is-arriving');
+				window.setTimeout(() => section.classList.remove('is-arriving'), 1600);
+			};
+
 			if (items.length) {
-				if (reduceMotion || !('IntersectionObserver' in window)) {
+				if (reduceMotion || !('requestAnimationFrame' in window)) {
 					items.forEach((item) => item.classList.add('is-visible'));
 				} else {
-					const observer = new IntersectionObserver(
-						(entries) => {
-							entries.forEach((entry) => {
-								if (!entry.isIntersecting) return;
-								entry.target.classList.add('is-visible');
-								observer.unobserve(entry.target);
-							});
-						},
-						{ rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
-					);
+					// Sweep berbasis scroll: lebih aman daripada IntersectionObserver,
+					// yang bisa "melewati" elemen saat user scroll cepat atau loncat anchor.
+					const pending = new Set(items);
 
-					items.forEach((item) => observer.observe(item));
+					const sweep = () => {
+						const limit = window.innerHeight * 0.92;
+						pending.forEach((item) => {
+							const rect = item.getBoundingClientRect();
+							if (rect.top < limit) {
+								pending.delete(item);
+								item.classList.add('is-visible');
+							}
+						});
+
+						// Arrival cukup dipancing saat section tujuan benar-benar masuk layar
+						if (pendingArrival) {
+							const rect = pendingArrival.getBoundingClientRect();
+							if (rect.top < window.innerHeight * 0.3) {
+								triggerArrival(pendingArrival);
+								pendingArrival = null;
+							}
+						}
+					};
+
+					let ticking = false;
+					const onScroll = () => {
+						if (ticking) return;
+						ticking = true;
+						window.requestAnimationFrame(() => {
+							sweep();
+							ticking = false;
+						});
+					};
+
+					window.addEventListener('scroll', onScroll, { passive: true });
+					window.addEventListener('resize', onScroll, { passive: true });
+					sweep();
 				}
 			}
+
+			document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
+				link.addEventListener('click', () => {
+					const id = link.getAttribute('href')?.slice(1);
+					if (!id) return;
+
+					const target = document.getElementById(id);
+					if (!target || target.tagName !== 'SECTION') return;
+
+					// Kalau section sudah terlihat, langsung picu; kalau tidak, tunggu scroll selesai.
+					const rect = target.getBoundingClientRect();
+					if (rect.top < window.innerHeight * 0.3) {
+						triggerArrival(target);
+						pendingArrival = null;
+					} else {
+						pendingArrival = target;
+					}
+				});
+			});
 		</script>
 	</body>
 </html>

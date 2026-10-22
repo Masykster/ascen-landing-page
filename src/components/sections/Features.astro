@@ -1,4 +1,5 @@
 ---
+import CustomCursor from '../ui/CustomCursor.astro';
 import ExamPanel from '../ui/ExamPanel.astro';
 import Eyebrow from '../ui/Eyebrow.astro';
 import Icon from '../ui/Icon.astro';
@@ -14,18 +15,18 @@ const amoBenefits = [
 
 <section class="section" id="fitur">
 	<div class="container">
-		<div class="section-head reveal">
-			<Eyebrow>Satu platform, tiga cara naik level</Eyebrow>
-			<h2>Belajar dengan cara yang paling cocok untukmu</h2>
-			<p>
+		<div class="section-head">
+			<Eyebrow class="reveal">Satu platform, tiga cara naik level</Eyebrow>
+			<h2 class="reveal">Belajar dengan cara yang paling cocok untukmu</h2>
+			<p class="reveal">
 				Mulai dari latihan harian, uji kesiapan dengan tryout, lalu buktikan kemampuanmu di
 				kompetisi nasional.
 			</p>
 		</div>
 
-		<div class="feature-grid">
+		<div class="feature-grid" data-stagger>
 			<FeatureCard
-				class="reveal"
+				class="reveal reveal-card"
 				variant="orange"
 				kicker="Kompetisi"
 				icon="trophy"
@@ -34,13 +35,15 @@ const amoBenefits = [
 				linkLabel="Lihat kompetisi"
 				href="https://cbt.ascendemy.id/kompetisi"
 			>
-				<div class="mock-panel">
+				<div class="mock-panel amo-panel" data-cursor-zone>
+					<CustomCursor />
+					<span class="amo-watermark"><Icon name="trophy" size={108} /></span>
 					<div class="mock-head">
 						<span class="mock-title">Keunggulan AMO 2026</span>
 						<span class="mock-tag">Gratis</span>
 					</div>
-					{amoBenefits.map((benefit) => (
-						<div class="mock-row">
+					{amoBenefits.map((benefit, index) => (
+						<div class:list={['mock-row', index === 0 && 'is-featured']}>
 							<span class:list={['mock-avatar', benefit.tone !== 'orange' && benefit.tone]}>
 								<Icon name={benefit.icon} size={11} />
 							</span>
@@ -48,11 +51,15 @@ const amoBenefits = [
 							<span class="mock-points">{benefit.meta}</span>
 						</div>
 					))}
+					<div class="amo-foot">
+						<span class="amo-dot"></span>
+						<span>Pendaftaran dibuka · 100% online</span>
+					</div>
 				</div>
 			</FeatureCard>
 
 			<FeatureCard
-				class="reveal"
+				class="reveal reveal-card"
 				variant="blue"
 				kicker="Tryout"
 				icon="monitor"
@@ -68,11 +75,14 @@ const amoBenefits = [
 					question="Jika 2x + 5 = 17, nilai x adalah…"
 					options={['A. 4', 'B. 5', 'C. 6', 'D. 7']}
 					correctIndex={2}
+					progress={45}
+					currentQuestion={9}
+					totalQuestions={20}
 				/>
 			</FeatureCard>
 
 			<FeatureCard
-				class="reveal"
+				class="reveal reveal-card"
 				variant="cream"
 				kicker="Latihan"
 				icon="book"
@@ -91,6 +101,7 @@ const amoBenefits = [
 						{ label: 'Fungsi kuadrat', value: 72 },
 						{ label: 'Peluang', value: 61 },
 					]}
+					progress={72}
 				/>
 			</FeatureCard>
 		</div>
@@ -182,6 +193,53 @@ const amoBenefits = [
 		font-family: var(--font-mono);
 		font-size: 9px;
 		color: #8a8f99;
+	}
+
+	.amo-panel {
+		overflow: hidden;
+		background: linear-gradient(180deg, #ffffff 0%, #fdf7f1 100%);
+	}
+
+	.amo-watermark {
+		position: absolute;
+		right: -16px;
+		bottom: -18px;
+		color: var(--orange-deep);
+		opacity: 0.06;
+		pointer-events: none;
+	}
+
+	.amo-watermark :global(svg) {
+		width: 108px;
+		height: 108px;
+	}
+
+	.mock-row.is-featured {
+		margin: 0 -9px;
+		padding: 7px 9px;
+		border-bottom-color: transparent;
+		border-radius: 10px;
+		background: #fff;
+		box-shadow: 0 12px 22px -18px rgba(35, 39, 46, 0.6);
+	}
+
+	.amo-foot {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		margin-top: 10px;
+		padding-top: 9px;
+		border-top: 1px dashed #f0e6d8;
+		font-size: 9px;
+		color: #9aa0ab;
+	}
+
+	.amo-dot {
+		width: 6px;
+		height: 6px;
+		border-radius: 50%;
+		background: #46a758;
+		box-shadow: 0 0 0 3px rgba(70, 167, 88, 0.16);
 	}
 
 	@media (max-width: 900px) {

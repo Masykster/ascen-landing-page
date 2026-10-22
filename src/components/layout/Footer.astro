@@ -1,6 +1,6 @@
 ---
 import { Image } from 'astro:assets';
-import logo from '../../assets/images/logo2.svg';
+import logo from '../../assets/images/logo.png';
 import unesa from '../../assets/images/Unesa.png';
 import datanusa from '../../assets/images/Datanusa.png';
 import qris from '../../assets/images/qris.png';
@@ -41,7 +41,14 @@ const paymentLogos = [
 		<div class="footer-grid">
 			<div class="footer-brand">
 				<a class="brand" href="#top" aria-label="Ascendemy">
-					<img src={logo.src} alt="Ascendemy" width="736" height="291" />
+					<Image
+						src={logo}
+						alt="Ascendemy"
+						widths={[112, 224]}
+						sizes="112px"
+						format="webp"
+						loading="lazy"
+					/>
 				</a>
 				<p>
 					Platform belajar, tryout, dan kompetisi untuk siswa Indonesia. Dikelola oleh Ascendemy
@@ -142,12 +149,9 @@ const paymentLogos = [
 		align-items: center;
 		flex: 0 0 auto;
 		margin-bottom: 16px;
-		padding: 7px 14px;
-		border-radius: 999px;
-		background: var(--ink);
 	}
 
-	.footer-brand .brand img {
+	.footer-brand .brand :global(img) {
 		width: 112px;
 		height: auto;
 	}

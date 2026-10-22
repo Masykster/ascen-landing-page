@@ -1,0 +1,62 @@
+---
+interface Props {
+	/** tampilkan ripple saat klik di dalam zona */
+	ripple?: boolean;
+}
+
+const { ripple = false } = Astro.props;
+---
+
+<span class="custom-cursor" data-cursor aria-hidden="true">
+	<img src="/cursor-alt-pointer-mouse.svg" width="16" height="16" alt="" />
+</span>
+
+<script>
+	const zones = Array.from(document.querySelectorAll<HTMLElement>('[data-cursor-zone]'));
+	const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (canHover) {
+		zones.forEach((zone) => {
+			const cursor = zone.querySelector<HTMLElement>('[data-cursor]');
+			if (!cursor) return;
+
+			zone.classList.add('has-custom-cursor');
+
+			let pointerX = 0;
+			let pointerY = 0;
+			let raf = 0;
+
+			zone.addEventListener('pointermove', (event) => {
+				if (event.pointerType !== 'mouse') return;
+				const rect = zone.getBoundingClientRect();
+				pointerX = event.clientX - rect.left;
+				pointerY = event.clientY - rect.top;
+				zone.classList.add('cursor-visible');
+
+				if (!raf) {
+					raf = window.requestAnimationFrame(() => {
+						cursor.style.transform = `translate3d(${pointerX - 2}px, ${pointerY - 2}px, 0)`;
+						raf = 0;
+					});
+				}
+			});
+
+			zone.addEventListener('pointerleave', () => {
+				zone.classList.remove('cursor-visible');
+			});
+
+			if (!reduceMotion && zone.hasAttribute('data-cursor-ripple')) {
+				zone.addEventListener('pointerdown', (event) => {
+					const rect = zone.getBoundingClientRect();
+					const ripple = document.createElement('span');
+					ripple.className = 'cursor-ripple';
+					ripple.style.left = `${event.clientX - rect.left}px`;
+					ripple.style.top = `${event.clientY - rect.top}px`;
+					zone.appendChild(ripple);
+					window.setTimeout(() => ripple.remove(), 620);
+				});
+			}
+		});
+	}
+</script>

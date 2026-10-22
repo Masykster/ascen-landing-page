@@ -29,7 +29,7 @@ const {
 } = Astro.props;
 ---
 
-<div class:list={['price-card', featured && 'price-card--featured', 'reveal']}>
+<div class:list={['price-card', featured && 'price-card--featured', 'reveal', 'reveal-card']}>
 	{badge && <span class="price-badge">{badge}</span>}
 	<span class="price-name">{name}</span>
 	<div class="price-amount">{amount}</div>
