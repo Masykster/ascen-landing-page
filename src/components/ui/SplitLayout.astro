@@ -8,10 +8,10 @@ const { reverse = false, class: className } = Astro.props;
 ---
 
 <div class:list={['container', 'split', reverse && 'split--reverse', className]}>
-	<div class="split-media reveal">
+	<div class="split-media reveal reveal-card">
 		<slot name="media" />
 	</div>
-	<div class="split-copy reveal">
+	<div class="split-copy">
 		<slot />
 	</div>
 </div>

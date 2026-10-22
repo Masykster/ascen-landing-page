@@ -15,28 +15,33 @@ const benefits = [
 
 <section class="section" id="latihan">
 	<SplitLayout>
-		<PracticePanel
-			slot="media"
-			title="Latihan Matematika"
-			subtitle="SMA Kelas 12 · 84 paket · 840 soal"
-			badge="Gratis"
-			chips={['Aljabar', 'Geometri', 'Statistika', 'Peluang']}
-			rows={[
-				{ label: 'Persamaan linear', value: 84 },
-				{ label: 'Fungsi kuadrat', value: 72 },
-				{ label: 'Peluang', value: 61 },
-				{ label: 'Statistika', value: 48 },
-			]}
-			footer={{ left: 'Progres belajar 72%', right: '12 soal dikerjakan hari ini' }}
-		/>
+		<div slot="media" class="panel-stage panel-stage--blue">
+			<PracticePanel
+				title="Latihan Matematika"
+				subtitle="SMA Kelas 12 · 84 paket · 840 soal"
+				badge="Gratis"
+				chips={['Aljabar', 'Geometri', 'Statistika', 'Peluang']}
+				rows={[
+					{ label: 'Persamaan linear', value: 84 },
+					{ label: 'Fungsi kuadrat', value: 72 },
+					{ label: 'Peluang', value: 61 },
+					{ label: 'Statistika', value: 48 },
+				]}
+				progress={72}
+				recommendation="Peluang · 5 soal lagi"
+				footer={{ left: 'Konsisten 4 hari berturut', right: '12 soal dikerjakan hari ini' }}
+			/>
+		</div>
 
-		<Eyebrow tone="blue">Latihan</Eyebrow>
-		<h2>Latihan yang menyesuaikan levelmu</h2>
-		<p>
+		<Eyebrow tone="blue" class="reveal">Latihan</Eyebrow>
+		<h2 class="reveal">Latihan yang menyesuaikan levelmu</h2>
+		<p class="reveal">
 			Mulai dari topik yang paling sering keluar. Setiap jawaban dilengkapi pembahasan agar kamu
 			memahami konsepnya, bukan sekadar menghafal rumus.
 		</p>
-		<CheckList items={benefits} tone="blue" />
-		<Button href="https://cbt.ascendemy.id/latihan" icon="arrow">Mulai latihan gratis</Button>
+		<CheckList class="reveal reveal-list" items={benefits} tone="blue" />
+		<Button class="reveal" href="https://cbt.ascendemy.id/latihan" icon="arrow">
+			Mulai latihan gratis
+		</Button>
 	</SplitLayout>
 </section>

@@ -36,14 +36,14 @@ const benefits = [
 			</div>
 		</Fragment>
 
-		<Eyebrow tone="blue">Kompetisi</Eyebrow>
-		<h2>Dominasi kompetisi, bangun portofolio untuk kampus impian</h2>
-		<p>
+		<Eyebrow tone="blue" class="reveal">Kompetisi</Eyebrow>
+		<h2 class="reveal">Dominasi kompetisi, bangun portofolio untuk kampus impian</h2>
+		<p class="reveal">
 			Olimpiade matematika bukan sekadar ajang juara. Sertifikat dan kemampuan pemecahan masalah
 			tingkat tinggi membantumu bersaing di jalur prestasi.
 		</p>
-		<CheckList items={benefits} tone="blue" />
-		<div class="competition-actions">
+		<CheckList class="reveal reveal-list" items={benefits} tone="blue" />
+		<div class="competition-actions reveal">
 			<Button href="https://cbt.ascendemy.id/kompetisi" icon="arrow">Daftar AMO 2026</Button>
 			<Button variant="ghost" href="https://cbt.ascendemy.id/kompetisi">
 				Lihat semua kompetisi
@@ -125,6 +125,30 @@ const benefits = [
 	@media (max-width: 640px) {
 		.media-frame {
 			border-radius: 20px;
+		}
+	}
+
+	/* Parallax dangkal: gambar bergerak lebih lambat dari kontennya.
+	   Timeline dipasang pada frame (bukan pada img) karena frame memakai
+	   overflow: hidden, sehingga img punya scroll container sendiri. */
+	@supports (animation-timeline: view()) {
+		.media-frame {
+			view-timeline-name: --media-view;
+			view-timeline-axis: block;
+		}
+
+		.media-frame :global(img) {
+			/* intensitas kecil: banner AMO punya konten di tepi (QR + teks) */
+			scale: 1.04;
+			animation: parallax-y-tight linear both;
+			animation-timeline: --media-view;
+			animation-range: cover;
+		}
+
+		.media-badge {
+			animation: parallax-y-soft linear both;
+			animation-timeline: view();
+			animation-range: cover;
 		}
 	}
 </style>

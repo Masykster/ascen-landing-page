@@ -127,8 +127,54 @@ const {
 	}
 
 	.mock {
+		position: relative;
+		isolation: isolate;
 		margin-top: auto;
 		padding-top: 26px;
+	}
+
+	.mock::before {
+		content: '';
+		position: absolute;
+		z-index: -1;
+		inset: 26px 0 -14px 0;
+		border-radius: 24px 24px 24px 10px;
+		background-color: var(--mock-plate, #f0e2cd);
+		background-image: radial-gradient(rgba(35, 39, 46, 0.12) 1px, transparent 1px);
+		background-size: 12px 12px;
+		transform: rotate(var(--mock-tilt, 1.2deg));
+		animation: mock-drift 8s ease-in-out infinite alternate;
+		box-shadow: 0 24px 44px -30px rgba(35, 39, 46, 0.5);
+		transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	@keyframes mock-drift {
+		from {
+			translate: 0 -3px;
+		}
+
+		to {
+			translate: 0 3px;
+		}
+	}
+
+	.feature-card--orange .mock {
+		--mock-plate: #ffdcc0;
+		--mock-tilt: 1.3deg;
+	}
+
+	.feature-card--blue .mock {
+		--mock-plate: #cfdfff;
+		--mock-tilt: -1.3deg;
+	}
+
+	.feature-card--cream .mock {
+		--mock-plate: #f0e2cd;
+		--mock-tilt: 1deg;
+	}
+
+	.feature-card:hover .mock::before {
+		transform: rotate(2.4deg) translateY(-3px);
 	}
 
 	@media (max-width: 900px) {

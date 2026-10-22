@@ -1,17 +1,36 @@
 ---
 import Button from '../ui/Button.astro';
 import Eyebrow from '../ui/Eyebrow.astro';
+import Icon from '../ui/Icon.astro';
+
+const trust = [
+	'Latihan dasar gratis selamanya',
+	'19.975 soal + pembahasan lengkap',
+	'Tanpa kartu kredit',
+];
 ---
 
 <section class="cta">
-	<div class="container cta-inner reveal">
-		<Eyebrow>Gratis untuk mulai</Eyebrow>
-		<h2>Siap naik level bersama Ascendemy?</h2>
-		<p>
+	<div class="container cta-inner">
+		<Eyebrow class="reveal">Gratis untuk mulai</Eyebrow>
+		<h2 class="reveal">Siap naik level bersama Ascendemy?</h2>
+		<p class="reveal">
 			Bergabung dengan ribuan siswa yang sudah belajar lebih terarah. Mulai dari latihan gratis,
 			lalu pilih tryout saat kamu siap.
 		</p>
-		<div class="cta-actions">
+
+		<ul class="cta-trust reveal reveal-list">
+			{trust.map((item) => (
+				<li>
+					<span class="cta-trust-icon">
+						<Icon name="check" size={11} />
+					</span>
+					{item}
+				</li>
+			))}
+		</ul>
+
+		<div class="cta-actions reveal">
 			<Button href="https://cbt.ascendemy.id/register" size="lg" icon="arrow">
 				Daftar gratis
 			</Button>
@@ -81,6 +100,42 @@ import Eyebrow from '../ui/Eyebrow.astro';
 		color: var(--muted);
 	}
 
+	.cta-trust {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 12px 26px;
+		flex-wrap: wrap;
+		margin: 26px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.cta-trust li {
+		display: inline-flex;
+		align-items: center;
+		gap: 9px;
+		font-size: 13px;
+		font-weight: 600;
+		color: #4d535e;
+	}
+
+	.cta-trust-icon {
+		width: 20px;
+		height: 20px;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.cta-trust-icon :global(svg) {
+		width: 11px;
+		height: 11px;
+	}
+
 	.cta-actions {
 		display: flex;
 		align-items: center;
@@ -93,6 +148,14 @@ import Eyebrow from '../ui/Eyebrow.astro';
 	@media (max-width: 640px) {
 		.cta {
 			padding: 64px 0;
+		}
+
+		.cta-trust {
+			gap: 10px 18px;
+		}
+
+		.cta-trust li {
+			font-size: 12px;
 		}
 
 		.cta-actions {

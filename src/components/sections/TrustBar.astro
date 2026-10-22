@@ -1,13 +1,13 @@
 ---
 import { Image } from 'astro:assets';
-import unesa from '../../assets/images/Unesa.png';
-import pibt from '../../assets/images/PIBT.png';
-import datanusa from '../../assets/images/Datanusa.png';
+import unesa from '../../assets/images/unesa-trim.png';
+import pibt from '../../assets/images/pibt-trim.png';
+import datanusa from '../../assets/images/datanusa-trim.png';
 
 const partners = [
-	{ src: unesa, alt: 'Universitas Negeri Surabaya' },
-	{ src: pibt, alt: 'PIBT Unesa' },
-	{ src: datanusa, alt: 'Inkubator Bisnis Datanusa' },
+	{ src: unesa, alt: 'Universitas Negeri Surabaya', width: 163, height: 191 },
+	{ src: pibt, alt: 'PIBT Unesa', width: 165, height: 139 },
+	{ src: datanusa, alt: 'Inkubator Bisnis Datanusa', width: 196, height: 63 },
 ];
 ---
 
@@ -16,7 +16,13 @@ const partners = [
 		<span class="trust-label">Didukung oleh</span>
 		<div class="trust-logos">
 			{partners.map((partner) => (
-				<Image src={partner.src} alt={partner.alt} width={56} height={56} />
+				<Image
+					src={partner.src}
+					alt={partner.alt}
+					width={partner.width}
+					height={partner.height}
+					format="webp"
+				/>
 			))}
 		</div>
 	</div>
@@ -50,14 +56,14 @@ const partners = [
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 38px;
+		gap: 32px;
 		flex-wrap: wrap;
 	}
 
 	.trust-logos :global(img) {
-		height: 28px;
+		height: 38px;
 		width: auto;
-		opacity: 0.58;
+		opacity: 0.7;
 		filter: grayscale(1);
 		transition: opacity 0.2s ease, filter 0.2s ease;
 	}
@@ -77,7 +83,7 @@ const partners = [
 		}
 
 		.trust-logos :global(img) {
-			height: 22px;
+			height: 32px;
 		}
 	}
 </style>

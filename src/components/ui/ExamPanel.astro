@@ -1,4 +1,7 @@
 ---
+import CustomCursor from './CustomCursor.astro';
+import Icon from './Icon.astro';
+
 interface Props {
 	title: string;
 	subtitle?: string;
@@ -9,6 +12,8 @@ interface Props {
 	correctIndex: number;
 	footer?: { left: string; right: string };
 	compact?: boolean;
+	currentQuestion?: number;
+	totalQuestions?: number;
 }
 
 const {
@@ -21,50 +26,434 @@ const {
 	correctIndex,
 	footer,
 	compact = false,
+	currentQuestion = 9,
+	totalQuestions = 20,
 } = Astro.props;
+
+const parsed = options.map((option) => {
+	const match = option.match(/^([A-Z])\.\s*(.*)$/);
+	return match ? { key: match[1], text: match[2] } : { key: '', text: option };
+});
+
+const navTiles = Array.from({ length: 10 }, (_, index) => index + 1);
+const questionNumber = String(currentQuestion).padStart(2, '0');
 ---
 
-<div class:list={['exam', compact ? 'mock-panel exam--compact' : 'exam-shell exam--full']}>
-	{compact ? (
-		<div class="exam-top">
-			<span class="mock-title">{title}</span>
-			<span class="exam-timer">{timer}</span>
-		</div>
-	) : (
-		<div class="exam-head">
-			<div>
-				<h3>{title}</h3>
-				{subtitle && <p>{subtitle}</p>}
-			</div>
-			<span class="exam-timer-lg">{timer}</span>
-		</div>
-	)}
+<div
+	class:list={['exam', compact ? 'mock-panel exam--compact' : 'exam-shell exam--full']}
+	data-cursor-zone={compact ? '' : undefined}
+>
+	{compact && <CustomCursor />}
+	{
+		compact ? (
+			<>
+				<div class="exam-top">
+					<span class="mock-title">{title}</span>
+					<span class="exam-timer">
+						<Icon name="timer" size={10} />
+						{timer}
+					</span>
+				</div>
 
-	<div class:list={[!compact && 'exam-body']}>
-		<div class="exam-progress"><span style={`width:${progress}%`}></span></div>
-		<p class="exam-q">{question}</p>
-		{options.map((option, index) => (
-			<div class:list={['exam-option', index === correctIndex && 'is-correct']}>
-				{option}
-			</div>
-		))}
-	</div>
+				<div class="exam-progress">
+					<span style={`--v:${progress / 100}`} />
+				</div>
+				<p class="exam-caption">
+					Soal {currentQuestion} dari {totalQuestions} · {progress}%
+				</p>
 
-	{!compact && footer && (
-		<div class="exam-foot">
-			<span>{footer.left}</span>
-			<span class="exam-score"><span></span>{footer.right}</span>
-		</div>
-	)}
+				<p class="exam-q">{question}</p>
+
+				<div class="exam-options">
+					{parsed.map((option, index) => (
+						<div class:list={['exam-option', index === correctIndex && 'is-correct']}>
+							<span class="opt-key">{option.key}</span>
+							<span class="opt-text">{option.text}</span>
+							{index === correctIndex && (
+								<span class="opt-check">
+									<Icon name="check" size={11} />
+								</span>
+							)}
+						</div>
+					))}
+				</div>
+			</>
+		) : (
+			<>
+				<div class="panel-status">
+					<span class="status-dot" />
+					<span class="status-label">Mode CBT</span>
+					<span class="status-meta">TKA-5 · SMP</span>
+				</div>
+
+				<div class="exam-head">
+					<div class="head-text">
+						<h3>{title}</h3>
+						{subtitle && <p>{subtitle}</p>}
+					</div>
+					<span class="exam-timer-lg">
+						<Icon name="timer" size={13} />
+						{timer}
+					</span>
+				</div>
+
+				<div class="exam-body">
+					<div class="exam-progress">
+						<span style={`--v:${progress / 100}`} />
+					</div>
+					<div class="exam-progress-meta">
+						<span>
+							Soal {currentQuestion} dari {totalQuestions}
+						</span>
+						<span>{progress}%</span>
+					</div>
+
+					<div class="exam-question">
+						<span class="q-num">{questionNumber}</span>
+						<p class="exam-q">{question}</p>
+					</div>
+
+					<div class="exam-options">
+						{parsed.map((option, index) => (
+							<div class:list={['exam-option', index === correctIndex && 'is-correct']}>
+								<span class="opt-key">{option.key}</span>
+								<span class="opt-text">{option.text}</span>
+								{index === correctIndex && (
+									<span class="opt-check">
+										<Icon name="check" size={11} />
+									</span>
+								)}
+							</div>
+						))}
+					</div>
+
+					<div class="exam-nav" aria-hidden="true">
+						{navTiles.map((tile, index) => (
+							<span
+								class:list={[
+									'nav-tile',
+									tile < currentQuestion && 'is-done',
+									tile === currentQuestion && 'is-current',
+									tile === currentQuestion + 1 && 'is-flagged',
+								]}
+								style={`--d:${index * 40}ms`}
+							>
+								{tile}
+							</span>
+						))}
+					</div>
+				</div>
+
+				{footer && (
+					<div class="exam-foot">
+						<span>{footer.left}</span>
+						<span class="exam-score">
+							<Icon name="chart" size={12} />
+							{footer.right}
+						</span>
+					</div>
+				)}
+
+				<span class="panel-sticker panel-sticker--live">
+					<span class="live-dot" />
+					Live
+				</span>
+			</>
+		)
+	}
 </div>
 
 <style>
 	.exam-shell {
-		padding: 22px;
-		border: 1px solid var(--line-warm);
-		border-radius: 26px;
+		--panel-accent: var(--orange);
+		position: relative;
+		padding: 22px 24px 20px;
+		border: 1px solid var(--panel-border);
+		border-radius: var(--panel-radius) var(--panel-radius) 12px var(--panel-radius);
+		background: var(--panel-bg);
+		box-shadow: var(--panel-shadow-orange);
+		transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.35s ease;
+	}
+
+	.exam-shell::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 28px;
+		right: 28px;
+		height: 3px;
+		border-radius: 0 0 4px 4px;
+		background: linear-gradient(90deg, var(--orange), #fdba74 58%, rgba(253, 186, 116, 0));
+	}
+
+	.exam-shell:hover {
+		transform: translateY(-6px) rotate(0.5deg);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 10px -4px rgba(35, 39, 46, 0.12),
+			0 36px 62px -30px rgba(249, 115, 22, 0.48);
+	}
+
+	.panel-status {
+		margin-bottom: 15px;
+	}
+
+	.exam-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 16px;
+	}
+
+	.head-text h3 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 19px;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		color: var(--ink);
+	}
+
+	.head-text p {
+		margin: 5px 0 0;
+		font-size: 11px;
+		color: #8a8f99;
+	}
+
+	.exam-timer-lg {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		flex: 0 0 auto;
+		padding: 8px 11px;
+		border-radius: 11px;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+		font-family: var(--font-mono);
+		font-size: 13px;
+		font-weight: 700;
+		box-shadow: inset 0 0 0 1px rgba(249, 115, 22, 0.18);
+	}
+
+	.exam-timer-lg :global(svg) {
+		width: 13px;
+		height: 13px;
+	}
+
+	.exam-body {
+		margin-top: 18px;
+	}
+
+	.exam-progress {
+		height: 7px;
+		border-radius: 999px;
+		background: #f2eee8;
+		overflow: hidden;
+	}
+
+	.exam-progress span {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border-radius: 999px;
+		background: linear-gradient(90deg, #fb923c, var(--orange));
+		transform: scaleX(var(--v, 0));
+		transform-origin: left center;
+		transition: transform 1s cubic-bezier(0.22, 0.8, 0.28, 1) 0.1s;
+	}
+
+	:global(.js) :global(.reveal:not(.is-visible)) .exam-progress span {
+		transform: scaleX(0);
+		transition: none;
+	}
+
+	.exam-progress-meta {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin: 8px 0 14px;
+		font-family: var(--font-mono);
+		font-size: 9px;
+		color: #9aa0ab;
+	}
+
+	.exam-question {
+		position: relative;
+		margin-bottom: 13px;
+		padding: 13px 14px;
+		border: 1px solid #f0ebe3;
+		border-radius: 14px;
+		background: rgba(255, 255, 255, 0.9);
+		overflow: hidden;
+	}
+
+	.q-num {
+		position: absolute;
+		right: 8px;
+		bottom: -14px;
+		font-family: var(--font-display);
+		font-size: 68px;
+		font-weight: 700;
+		line-height: 1;
+		color: rgba(35, 39, 46, 0.05);
+	}
+
+	.exam-q {
+		position: relative;
+		margin: 0;
+		font-size: 13px;
+		line-height: 1.5;
+		font-weight: 600;
+		color: var(--ink);
+	}
+
+	.exam-options {
+		display: grid;
+		gap: 7px;
+	}
+
+	.exam-option {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 9px 11px;
+		border: 1px solid #ece7df;
+		border-radius: 10px;
 		background: #fff;
-		box-shadow: var(--shadow);
+		font-size: 11px;
+		color: #5d636e;
+		transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.exam-option:hover {
+		transform: translateX(3px);
+		border-color: #f0cdb0;
+		box-shadow: 0 10px 18px -14px rgba(35, 39, 46, 0.5);
+	}
+
+	.opt-key {
+		width: 20px;
+		height: 20px;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		border-radius: 7px;
+		background: #f6f2ec;
+		color: #8a8f99;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 700;
+	}
+
+	.opt-text {
+		flex: 1;
+	}
+
+	.exam-option.is-correct {
+		border-color: #cfe8d2;
+		background: var(--green-soft);
+		color: #2f6b3a;
+		font-weight: 700;
+	}
+
+	.exam-option.is-correct .opt-key {
+		background: #46a758;
+		color: #fff;
+	}
+
+	.opt-check {
+		width: 18px;
+		height: 18px;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		border-radius: 50%;
+		background: #46a758;
+		color: #fff;
+	}
+
+	.opt-check :global(svg) {
+		width: 11px;
+		height: 11px;
+	}
+
+	.exam-nav {
+		display: flex;
+		gap: 5px;
+		margin-top: 15px;
+	}
+
+	.nav-tile {
+		flex: 1;
+		height: 22px;
+		display: grid;
+		place-items: center;
+		border-radius: 6px;
+		background: #f6f2ec;
+		color: #a3a8b2;
+		font-family: var(--font-mono);
+		font-size: 9px;
+		font-weight: 700;
+		transition: opacity 0.4s ease, transform 0.4s ease;
+		transition-delay: var(--d, 0ms);
+	}
+
+	:global(.js) :global(.reveal:not(.is-visible)) .nav-tile {
+		opacity: 0;
+		transform: translateY(4px);
+		transition: none;
+	}
+
+	.nav-tile.is-done {
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.nav-tile.is-current {
+		background: var(--orange);
+		color: #fff;
+		box-shadow: 0 8px 16px -10px rgba(249, 115, 22, 0.95);
+	}
+
+	.nav-tile.is-flagged {
+		background: #fff;
+		border: 1px dashed #e8cdb4;
+		color: #c08a5a;
+	}
+
+	.exam-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+		margin-top: 16px;
+		padding-top: 14px;
+		border-top: 1px dashed #ece7df;
+		font-size: 10px;
+		color: #8a8f99;
+	}
+
+	.exam-score {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-weight: 700;
+		color: #2f6b3a;
+	}
+
+	.exam-score :global(svg) {
+		width: 12px;
+		height: 12px;
+	}
+
+	/* --- compact ---------------------------------------------------------- */
+
+	.exam--compact {
+		--panel-accent: var(--orange);
+	}
+
+	.exam--compact:hover {
+		transform: translateY(-4px) rotate(0.6deg);
+		box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 4px 10px -4px rgba(35, 39, 46, 0.12),
+			0 30px 50px -28px rgba(249, 115, 22, 0.45);
 	}
 
 	.exam-top {
@@ -76,8 +465,11 @@ const {
 	}
 
 	.exam-timer {
-		padding: 4px 8px;
-		border-radius: 6px;
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 4px 7px;
+		border-radius: 7px;
 		background: var(--orange-soft);
 		color: var(--orange-deep);
 		font-family: var(--font-mono);
@@ -85,129 +477,84 @@ const {
 		font-weight: 700;
 	}
 
-	.exam-progress {
-		height: 5px;
-		margin-bottom: 11px;
-		border-radius: 999px;
-		background: #f2eee8;
-		overflow: hidden;
+	.exam-timer :global(svg) {
+		width: 10px;
+		height: 10px;
 	}
 
-	.exam-progress span {
-		display: block;
-		height: 100%;
-		border-radius: 999px;
-		background: var(--orange);
+	.exam-caption {
+		margin: 6px 0 8px;
+		font-family: var(--font-mono);
+		font-size: 8px;
+		color: #9aa0ab;
 	}
 
-	.exam-q {
-		margin-bottom: 9px;
-		font-size: 10px;
+	.exam--compact .exam-q {
+		margin-bottom: 8px;
+		font-size: 9.5px;
 		line-height: 1.45;
-		color: #3f434a;
-	}
-
-	.exam-option {
-		margin-bottom: 5px;
-		padding: 6px 8px;
-		border: 1px solid #ece7df;
-		border-radius: 6px;
-		font-size: 9px;
-		color: #6a707c;
-	}
-
-	.exam-option.is-correct {
-		border-color: #cfe8d2;
-		background: var(--green-soft);
-		color: #2f6b3a;
-		font-weight: 700;
-	}
-
-	.exam-head {
-		display: flex;
-		align-items: flex-start;
-		justify-content: space-between;
-		gap: 12px;
-		padding-bottom: 14px;
-		border-bottom: 1px solid #f1ece5;
-	}
-
-	.exam-head h3 {
-		margin: 0;
-		font-size: 14px;
-		font-weight: 700;
-		color: var(--ink);
-	}
-
-	.exam-head p {
-		margin: 4px 0 0;
-		font-size: 11px;
-		color: #8a8f99;
-	}
-
-	.exam-timer-lg {
-		padding: 7px 10px;
-		border-radius: 8px;
-		background: var(--orange-soft);
-		color: var(--orange-deep);
-		font-family: var(--font-mono);
-		font-size: 13px;
-		font-weight: 700;
-	}
-
-	.exam-body {
-		padding-top: 16px;
-	}
-
-	.exam-body .exam-progress {
-		height: 7px;
-		margin-bottom: 16px;
-	}
-
-	.exam-body .exam-q {
-		margin-bottom: 12px;
-		font-size: 13px;
-		line-height: 1.5;
 		font-weight: 600;
 	}
 
-	.exam-body .exam-option {
-		margin-bottom: 7px;
-		padding: 9px 11px;
+	.exam--compact .exam-options {
+		gap: 5px;
+	}
+
+	.exam--compact .exam-option {
+		gap: 7px;
+		padding: 6px 8px;
 		border-radius: 8px;
-		font-size: 11px;
+		font-size: 9px;
 	}
 
-	.exam-foot {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		margin-top: 16px;
-		padding-top: 14px;
-		border-top: 1px solid #f1ece5;
-		font-size: 10px;
-		color: #8a8f99;
+	.exam--compact .opt-key {
+		width: 16px;
+		height: 16px;
+		border-radius: 5px;
+		font-size: 8px;
 	}
 
-	.exam-score {
-		display: flex;
-		align-items: center;
-		gap: 6px;
-		font-weight: 700;
-		color: #2f6b3a;
+	.exam--compact .opt-check {
+		width: 14px;
+		height: 14px;
 	}
 
-	.exam-score span {
-		width: 7px;
-		height: 7px;
-		border-radius: 50%;
-		background: #46a758;
+	.exam--compact .opt-check :global(svg) {
+		width: 9px;
+		height: 9px;
 	}
 
 	@media (max-width: 640px) {
 		.exam-shell {
-			padding: 16px;
-			border-radius: 20px;
+			padding: 18px 16px 16px;
+			border-radius: 24px 10px 24px 24px;
+		}
+
+		.exam-shell::before {
+			left: 20px;
+			right: 20px;
+		}
+
+		.head-text h3 {
+			font-size: 17px;
+		}
+
+		.exam-timer-lg {
+			padding: 7px 9px;
+			font-size: 12px;
+		}
+
+		.exam-question {
+			padding: 11px 12px;
+		}
+
+		.exam-q {
+			font-size: 12px;
+		}
+
+		.nav-tile {
+			height: 20px;
+			font-size: 8px;
 		}
 	}
 </style>

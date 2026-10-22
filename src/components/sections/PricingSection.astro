@@ -57,19 +57,19 @@ const plans = [
 
 <section class="section section--cream" id="harga">
 	<div class="container">
-		<div class="section-head reveal">
-			<Eyebrow>Harga transparan</Eyebrow>
-			<h2>Mulai gratis, upgrade saat siap</h2>
-			<p>
+		<div class="section-head">
+			<Eyebrow class="reveal">Harga transparan</Eyebrow>
+			<h2 class="reveal">Mulai gratis, upgrade saat siap</h2>
+			<p class="reveal">
 				Pilih paket sesuai targetmu. Pembayaran diproses melalui channel resmi yang aman.
 			</p>
 		</div>
 
-		<div class="pricing-grid">
+		<div class="pricing-grid" data-stagger>
 			{plans.map((plan) => <PriceCard {...plan} />)}
 		</div>
 
-		<p class="price-note">
+		<p class="price-note reveal">
 			Harga dapat berubah sesuai periode promo. Cek halaman paket untuk harga terbaru.
 		</p>
 	</div>

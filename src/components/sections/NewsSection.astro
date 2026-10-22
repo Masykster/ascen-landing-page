@@ -50,16 +50,16 @@ const newsItems = [
 
 <section class="section section--cream" id="berita">
 	<div class="container">
-		<div class="section-head section-head--split reveal">
+		<div class="section-head section-head--split">
 			<div>
-				<Eyebrow tone="blue">Kabar Ascendemy</Eyebrow>
-				<h2>Update terbaru dari dunia pendidikan</h2>
-				<p>
+				<Eyebrow tone="blue" class="reveal">Kabar Ascendemy</Eyebrow>
+				<h2 class="reveal">Update terbaru dari dunia pendidikan</h2>
+				<p class="reveal">
 					Berita seputar TKA, olimpiade, dan tips belajar untuk membantumu mengambil keputusan
 					yang tepat.
 				</p>
 			</div>
-			<Button variant="ghost" href="https://ascendemy.id/news/news" icon="arrow">
+			<Button class="reveal" variant="ghost" href="https://ascendemy.id/news/news" icon="arrow">
 				Semua berita
 			</Button>
 		</div>
@@ -67,7 +67,7 @@ const newsItems = [
 		<div class="news-grid">
 			<NewsFeaturedCard {...featured} />
 
-			<div class="news-list reveal">
+			<div class="news-list reveal reveal-list">
 				{newsItems.map((item) => <NewsListItem {...item} />)}
 			</div>
 		</div>

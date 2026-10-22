@@ -1,0 +1,417 @@
+---
+import Button from '../ui/Button.astro';
+import Eyebrow from '../ui/Eyebrow.astro';
+import Icon from '../ui/Icon.astro';
+
+const points = [
+	'Latihan dasar gratis, tanpa kartu kredit',
+	'Soal TKA, AMO, dan pembahasan langkah demi langkah',
+	'Analisis skor langsung setelah tryout selesai',
+];
+
+const proof = [
+	{ initials: 'NP', tone: 'orange' },
+	{ initials: 'RF', tone: 'blue' },
+	{ initials: 'AR', tone: 'green' },
+];
+---
+
+<section class="cta-band" id="mulai">
+	<div class="container cta-band-inner">
+		<div class="cta-band-copy">
+			<Eyebrow class="reveal">Mulai gratis hari ini</Eyebrow>
+			<h2 class="reveal">Naik kelas itu butuh latihan, bukan sekadar kebetulan</h2>
+			<p class="reveal">
+				Daftar gratis, kerjakan satu paket, lalu lihat sendiri perbedaannya dalam seminggu.
+				Tanpa biaya, tanpa kartu kredit.
+			</p>
+
+			<ul class="cta-points reveal reveal-list">
+				{points.map((point) => (
+					<li>
+						<span class="cta-point-icon">
+							<Icon name="check" size={11} />
+						</span>
+						{point}
+					</li>
+				))}
+			</ul>
+
+			<div class="cta-band-actions reveal">
+				<Button href="https://cbt.ascendemy.id/register" size="lg" icon="arrow">
+					Daftar gratis
+				</Button>
+				<Button variant="ghost" href="#harga" size="lg">Lihat semua paket</Button>
+			</div>
+		</div>
+
+		<div class="cta-band-panel reveal reveal-card">
+			<form class="signup" action="https://cbt.ascendemy.id/register" method="get">
+				<div class="signup-head">
+					<span class="signup-title">Buat akun gratis</span>
+					<span class="signup-dot"></span>
+				</div>
+
+				<label class="signup-label" for="cta-email">Email siswa</label>
+				<input
+					class="signup-input"
+					id="cta-email"
+					name="email"
+					type="email"
+					placeholder="nama@sekolah.sch.id"
+					autocomplete="email"
+					required
+				/>
+
+				<button class="signup-submit" type="submit">
+					Daftar gratis
+					<Icon name="arrow" size={14} />
+				</button>
+
+				<p class="signup-note">Tanpa kartu kredit · bisa berhenti kapan saja</p>
+			</form>
+
+			<div class="signup-proof">
+				<span class="signup-avatars">
+					{proof.map((person) => (
+						<span class:list={['signup-avatar', `signup-avatar--${person.tone}`]}>
+							{person.initials}
+						</span>
+					))}
+				</span>
+				<span class="signup-proof-text">
+					<strong>841+ siswa</strong> sudah bergabung bulan ini
+				</span>
+			</div>
+		</div>
+	</div>
+</section>
+
+<style>
+	.cta-band {
+		position: relative;
+		overflow: hidden;
+		padding: 92px 0;
+		background: var(--ink);
+		color: #fff;
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.14),
+			inset 0 80px 80px -80px rgba(255, 255, 255, 0.1);
+	}
+
+	.cta-band::before,
+	.cta-band::after {
+		content: '';
+		position: absolute;
+		border-radius: 50%;
+		filter: blur(80px);
+		pointer-events: none;
+	}
+
+	.cta-band::before {
+		width: 420px;
+		height: 420px;
+		left: -140px;
+		top: -160px;
+		background: rgba(249, 115, 22, 0.32);
+	}
+
+	.cta-band::after {
+		width: 380px;
+		height: 380px;
+		right: -120px;
+		bottom: -150px;
+		background: rgba(37, 99, 235, 0.3);
+	}
+
+	.cta-band-inner {
+		position: relative;
+		z-index: 1;
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 0.78fr);
+		gap: 56px;
+		align-items: center;
+	}
+
+	.cta-band h2 {
+		margin: 16px 0 0;
+		max-width: 560px;
+		font-family: var(--font-display);
+		font-weight: 600;
+		font-size: clamp(32px, 3.6vw, 46px);
+		line-height: 1.08;
+		letter-spacing: -0.04em;
+		color: #fff;
+	}
+
+	.cta-band-copy > p {
+		margin: 16px 0 0;
+		max-width: 520px;
+		font-size: 15px;
+		line-height: 1.65;
+		color: #b6bac3;
+	}
+
+	.cta-points {
+		display: grid;
+		gap: 11px;
+		margin: 24px 0 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.cta-points li {
+		display: flex;
+		align-items: flex-start;
+		gap: 10px;
+		font-size: 14px;
+		line-height: 1.5;
+		color: #d6d9df;
+	}
+
+	.cta-point-icon {
+		width: 20px;
+		height: 20px;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
+		margin-top: 1px;
+		border-radius: 50%;
+		background: rgba(249, 115, 22, 0.18);
+		color: #fb923c;
+	}
+
+	.cta-point-icon :global(svg) {
+		width: 11px;
+		height: 11px;
+	}
+
+	.cta-band-actions {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		margin-top: 28px;
+		flex-wrap: wrap;
+	}
+
+	.cta-band-actions :global(.btn-ghost) {
+		color: #fff;
+		border-color: rgba(255, 255, 255, 0.28);
+	}
+
+	.cta-band-actions :global(.btn-ghost:hover) {
+		background: rgba(255, 255, 255, 0.08);
+		border-color: rgba(255, 255, 255, 0.42);
+	}
+
+	.cta-band-panel {
+		position: relative;
+	}
+
+	.signup {
+		position: relative;
+		padding: 24px 26px 22px;
+		border-radius: 26px 26px 26px 10px;
+		background: linear-gradient(180deg, #ffffff 0%, #fdfaf6 100%);
+		box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.3), 0 30px 60px -30px rgba(0, 0, 0, 0.55);
+	}
+
+	.signup::before {
+		content: '';
+		position: absolute;
+		top: 0;
+		left: 26px;
+		right: 26px;
+		height: 3px;
+		border-radius: 0 0 4px 4px;
+		background: linear-gradient(90deg, var(--orange), #fdba74 58%, rgba(253, 186, 116, 0));
+	}
+
+	.signup-head {
+		display: flex;
+		align-items: center;
+		gap: 9px;
+		margin-bottom: 18px;
+	}
+
+	.signup-title {
+		font-size: 11px;
+		font-weight: 800;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.signup-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		background: #46a758;
+		box-shadow: 0 0 0 4px rgba(70, 167, 88, 0.16);
+	}
+
+	.signup-label {
+		display: block;
+		margin-bottom: 7px;
+		font-size: 11px;
+		font-weight: 700;
+		color: #5d636e;
+	}
+
+	.signup-input {
+		width: 100%;
+		padding: 13px 15px;
+		border: 1px solid #e6dfd4;
+		border-radius: 12px;
+		background: #fff;
+		font-family: inherit;
+		font-size: 14px;
+		color: var(--ink);
+		transition: border-color 0.2s ease, box-shadow 0.2s ease;
+	}
+
+	.signup-input::placeholder {
+		color: #b8bcc4;
+	}
+
+	.signup-input:focus {
+		outline: none;
+		border-color: var(--orange);
+		box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.16);
+	}
+
+	.signup-submit {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 8px;
+		width: 100%;
+		margin-top: 12px;
+		padding: 14px 20px;
+		border: 0;
+		border-radius: 12px;
+		background: var(--orange);
+		color: #fff;
+		font-family: inherit;
+		font-size: 15px;
+		font-weight: 700;
+		cursor: pointer;
+		box-shadow: 0 14px 26px -14px rgba(249, 115, 22, 0.9);
+		transition: background 0.2s ease, transform 0.2s ease;
+	}
+
+	.signup-submit:hover {
+		background: var(--orange-deep);
+		transform: translateY(-1px);
+	}
+
+	.signup-submit :global(svg) {
+		width: 15px;
+		height: 15px;
+	}
+
+	.signup-note {
+		margin: 12px 0 0;
+		font-size: 10px;
+		color: #9aa0ab;
+		text-align: center;
+	}
+
+	.signup-proof {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		margin-top: 18px;
+		padding: 0 4px;
+	}
+
+	.signup-avatars {
+		display: inline-flex;
+	}
+
+	.signup-avatar {
+		width: 30px;
+		height: 30px;
+		display: grid;
+		place-items: center;
+		margin-left: -8px;
+		border: 2px solid var(--ink);
+		border-radius: 50%;
+		background: linear-gradient(140deg, #fb923c, var(--orange-deep));
+		color: #fff;
+		font-size: 9px;
+		font-weight: 800;
+	}
+
+	.signup-avatar:first-child {
+		margin-left: 0;
+	}
+
+	.signup-avatar--blue {
+		background: linear-gradient(140deg, #60a5fa, #1d4ed8);
+	}
+
+	.signup-avatar--green {
+		background: linear-gradient(140deg, #6cc47c, #2f8f45);
+	}
+
+	.signup-proof-text {
+		font-size: 12px;
+		color: #b6bac3;
+	}
+
+	.signup-proof-text strong {
+		color: #fff;
+	}
+
+	@media (max-width: 900px) {
+		.cta-band-inner {
+			grid-template-columns: 1fr;
+			gap: 40px;
+		}
+
+		.cta-band h2 {
+			max-width: none;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.cta-band {
+			padding: 64px 0;
+		}
+
+		.cta-band-actions {
+			flex-direction: column;
+			align-items: stretch;
+		}
+
+		.cta-band-actions :global(.btn) {
+			width: 100%;
+		}
+
+		.signup {
+			padding: 20px 18px;
+		}
+	}
+
+	/* Parallax dangkal: blob cahaya bergerak berlawanan arah.
+	   Timeline dipasang pada section karena .cta-band memakai overflow: hidden. */
+	@supports (animation-timeline: view()) {
+		.cta-band {
+			view-timeline-name: --cta-view;
+			view-timeline-axis: block;
+		}
+
+		.cta-band::before {
+			animation: parallax-blob linear both;
+			animation-timeline: --cta-view;
+			animation-range: cover;
+		}
+
+		.cta-band::after {
+			animation: parallax-y linear both;
+			animation-timeline: --cta-view;
+			animation-range: cover;
+		}
+	}
+</style>

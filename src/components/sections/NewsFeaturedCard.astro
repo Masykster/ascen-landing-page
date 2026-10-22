@@ -17,7 +17,7 @@ interface Props {
 const { href, image, alt, date, category, title, excerpt, pinned = false } = Astro.props;
 ---
 
-<a class="news-featured reveal" href={href}>
+<a class="news-featured reveal reveal-card" href={href}>
 	<div class="news-media">
 		<Image
 			src={image}
@@ -153,6 +153,22 @@ const { href, image, alt, date, category, title, excerpt, pinned = false } = Ast
 	@media (max-width: 640px) {
 		.news-body {
 			padding: 18px;
+		}
+	}
+
+	/* Parallax dangkal: gambar lebih lambat dari kontennya.
+	   Timeline dipasang pada .news-featured karena .news-media memakai overflow: hidden. */
+	@supports (animation-timeline: view()) {
+		.news-featured {
+			view-timeline-name: --news-view;
+			view-timeline-axis: block;
+		}
+
+		.news-media :global(img) {
+			scale: 1.08;
+			animation: parallax-y-soft linear both;
+			animation-timeline: --news-view;
+			animation-range: cover;
 		}
 	}
 </style>
