@@ -1,13 +1,17 @@
 ---
 import Button from '../ui/Button.astro';
 import ExamSimulator from '../ui/ExamSimulator.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 ---
 
 <section class="hero" id="beranda">
+	<div class="hero-aurora" aria-hidden="true">
+		<span class="aurora aurora--1"></span>
+		<span class="aurora aurora--2"></span>
+		<span class="aurora aurora--3"></span>
+	</div>
+	<div class="hero-snow" aria-hidden="true"></div>
 	<div class="container">
 		<div class="hero-copy">
-			<Eyebrow>Belajar · Tryout · Berkompetisi</Eyebrow>
 			<h1>
 				Tingkatkan kompetensi dengan <span class="accent">Computer Based Test</span>
 			</h1>
@@ -46,21 +50,144 @@ import Eyebrow from '../ui/Eyebrow.astro';
 		overflow: hidden;
 		padding: 68px 0 0;
 		background:
-			radial-gradient(900px 420px at 18% 0%, #fff1e4 0%, rgba(255, 241, 228, 0) 70%),
-			radial-gradient(800px 420px at 86% 8%, #eef4ff 0%, rgba(238, 244, 255, 0) 68%),
-			linear-gradient(180deg, #fdf9f4 0%, #fdfdfd 78%);
+			/* matahari kutub — sedikit kuning hangat di kiri-atas */
+			radial-gradient(760px 380px at 16% -4%, #fff2c8 0%, rgba(255, 242, 200, 0) 68%),
+			/* cahaya kutub — biru dingin di kanan-atas */
+			radial-gradient(900px 460px at 88% 4%, #d8e9ff 0%, rgba(216, 233, 255, 0) 70%),
+			/* dasar es: biru muda → putih, menyatu ke section bawah */
+			linear-gradient(180deg, #e9f3ff 0%, #f4faff 52%, #fdfdfd 100%);
 	}
 
 	.hero::before {
 		content: "";
 		position: absolute;
 		inset: 0;
-		background-image: radial-gradient(#e7ded2 1px, transparent 1px);
+		background-image: radial-gradient(#cfe0f5 1px, transparent 1px);
 		background-size: 26px 26px;
-		opacity: 0.45;
+		opacity: 0.5;
 		mask-image: linear-gradient(180deg, #000 0%, transparent 78%);
 		-webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 78%);
 		pointer-events: none;
+	}
+
+	/* --- aurora kutub ----------------------------------------------------- */
+
+	.hero-aurora {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	.aurora {
+		position: absolute;
+		left: -12%;
+		width: 124%;
+		rotate: var(--tilt, 0deg);
+		border-radius: 50%;
+		filter: blur(38px);
+		animation: aurora-drift 16s ease-in-out infinite alternate;
+		will-change: translate, opacity;
+	}
+
+	.aurora--1 {
+		--tilt: -5deg;
+		--o-in: 0.5;
+		--o-out: 0.68;
+		top: 34px;
+		height: 150px;
+		background: linear-gradient(
+			90deg,
+			transparent 4%,
+			rgba(37, 99, 235, 0.44) 30%,
+			rgba(56, 189, 248, 0.48) 55%,
+			rgba(255, 224, 132, 0.58) 76%,
+			transparent 96%
+		);
+	}
+
+	.aurora--2 {
+		--tilt: 4deg;
+		--o-in: 0.38;
+		--o-out: 0.54;
+		top: 158px;
+		height: 190px;
+		animation-duration: 21s;
+		animation-delay: -7s;
+		background: linear-gradient(
+			90deg,
+			transparent 0%,
+			rgba(96, 165, 250, 0.38) 25%,
+			rgba(45, 212, 191, 0.34) 58%,
+			rgba(255, 214, 110, 0.48) 82%,
+			transparent 100%
+		);
+	}
+
+	.aurora--3 {
+		--tilt: -9deg;
+		--o-in: 0.5;
+		--o-out: 0.66;
+		top: -56px;
+		height: 120px;
+		animation-duration: 13s;
+		animation-delay: -3s;
+		background: linear-gradient(
+			90deg,
+			transparent 10%,
+			rgba(147, 197, 253, 0.55) 40%,
+			rgba(255, 232, 154, 0.62) 70%,
+			transparent 92%
+		);
+	}
+
+	@keyframes aurora-drift {
+		from {
+			translate: -2.5% -6px;
+			opacity: var(--o-in, 0.35);
+		}
+
+		to {
+			translate: 2.5% 8px;
+			opacity: var(--o-out, 0.5);
+		}
+	}
+
+	/* --- bulir salju turun (murni CSS) ------------------------------------ */
+
+	.hero-snow {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background-image:
+			radial-gradient(
+				circle 4px at 50% 50%,
+				rgba(255, 255, 255, 1) 0%,
+				rgba(255, 255, 255, 0) 70%
+			),
+			radial-gradient(
+				circle 3px at 50% 50%,
+				rgba(168, 207, 255, 1) 0%,
+				rgba(168, 207, 255, 0) 70%
+			),
+			radial-gradient(
+				circle 2.5px at 50% 50%,
+				rgba(255, 255, 255, 0.95) 0%,
+				rgba(255, 255, 255, 0) 70%
+			);
+		background-size: 96px 150px, 148px 220px, 84px 126px;
+		background-position: 18px 0, 60px 0, 6px 0;
+		animation: snow-fall 12s linear infinite;
+		mask-image: linear-gradient(180deg, transparent 0%, #000 10%, #000 62%, transparent 96%);
+		-webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 10%, #000 62%, transparent 96%);
+		will-change: background-position;
+	}
+
+	@keyframes snow-fall {
+		/* offset y = tinggi tile → loop mulus tanpa lompatan */
+		to {
+			background-position: 18px 150px, 60px 220px, 6px 126px;
+		}
 	}
 
 	.hero-copy {

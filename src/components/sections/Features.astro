@@ -1,7 +1,6 @@
 ---
 import CustomCursor from '../ui/CustomCursor.astro';
 import ExamPanel from '../ui/ExamPanel.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 import Icon from '../ui/Icon.astro';
 import PracticePanel from '../ui/PracticePanel.astro';
 import FeatureCard from './FeatureCard.astro';
@@ -16,7 +15,6 @@ const amoBenefits = [
 <section class="section" id="fitur">
 	<div class="container">
 		<div class="section-head">
-			<Eyebrow class="reveal">Satu platform, tiga cara naik level</Eyebrow>
 			<h2 class="reveal">Belajar dengan cara yang paling cocok untukmu</h2>
 			<p class="reveal">
 				Mulai dari latihan harian, uji kesiapan dengan tryout, lalu buktikan kemampuanmu di
@@ -28,8 +26,6 @@ const amoBenefits = [
 			<FeatureCard
 				class="reveal reveal-card"
 				variant="orange"
-				kicker="Kompetisi"
-				icon="trophy"
 				title="Ascendemy Mathematics Olympiad"
 				description="Uji kemampuanmu di olimpiade matematika nasional. 100% online, e-sertifikat, dan hadiah uang tunai untuk juara umum."
 				linkLabel="Lihat kompetisi"
@@ -40,7 +36,6 @@ const amoBenefits = [
 					<span class="amo-watermark"><Icon name="trophy" size={108} /></span>
 					<div class="mock-head">
 						<span class="mock-title">Keunggulan AMO 2026</span>
-						<span class="mock-tag">Gratis</span>
 					</div>
 					{amoBenefits.map((benefit, index) => (
 						<div class:list={['mock-row', index === 0 && 'is-featured']}>
@@ -61,8 +56,6 @@ const amoBenefits = [
 			<FeatureCard
 				class="reveal reveal-card"
 				variant="blue"
-				kicker="Tryout"
-				icon="monitor"
 				title="Tryout TKA & UTBK"
 				description="Simulasi ujian dengan timer, analisis skor, dan pembahasan. Rasakan pengalaman Computer Based Test yang sesungguhnya."
 				linkLabel="Mulai tryout"
@@ -84,8 +77,6 @@ const amoBenefits = [
 			<FeatureCard
 				class="reveal reveal-card"
 				variant="cream"
-				kicker="Latihan"
-				icon="book"
 				title="Latihan soal adaptif"
 				description="Ribuan soal matematika dari SMP hingga SMA, lengkap dengan pembahasan langkah demi langkah."
 				linkLabel="Mulai latihan"
@@ -94,8 +85,6 @@ const amoBenefits = [
 				<PracticePanel
 					compact
 					title="Latihan Matematika"
-					badge="Gratis"
-					chips={['Aljabar', 'Geometri', 'Statistika']}
 					rows={[
 						{ label: 'Persamaan linear', value: 84 },
 						{ label: 'Fungsi kuadrat', value: 72 },
@@ -109,6 +98,11 @@ const amoBenefits = [
 </section>
 
 <style>
+	/* transisi zona-es → zona-krem: tint es pucat di atas section pertama */
+	.section {
+		background-image: linear-gradient(180deg, #f6faff 0%, rgba(246, 250, 255, 0) 160px);
+	}
+
 	.section-head {
 		max-width: 760px;
 		margin: 0 auto 48px;

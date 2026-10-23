@@ -10,8 +10,6 @@ interface PracticeRow {
 interface Props {
 	title: string;
 	subtitle?: string;
-	badge: string;
-	chips: string[];
 	rows: PracticeRow[];
 	footer?: { left: string; right: string };
 	compact?: boolean;
@@ -22,8 +20,6 @@ interface Props {
 const {
 	title,
 	subtitle,
-	badge,
-	chips,
 	rows,
 	footer,
 	compact = false,
@@ -45,13 +41,6 @@ const ringOffset = RING_C * (1 - Math.min(Math.max(progress, 0), 100) / 100);
 			<>
 				<div class="mock-head">
 					<span class="mock-title">{title}</span>
-					<span class="mock-tag">{badge}</span>
-				</div>
-
-				<div class="practice-chips">
-					{chips.map((chip) => (
-						<span class="chip">{chip}</span>
-					))}
 				</div>
 
 				<div class="practice-rows">
@@ -93,12 +82,6 @@ const ringOffset = RING_C * (1 - Math.min(Math.max(progress, 0), 100) / 100);
 					)}
 				</div>
 
-				<div class="practice-chips">
-					{chips.map((chip) => (
-						<span class="chip">{chip}</span>
-					))}
-				</div>
-
 				<div class="practice-rec">
 					<span class="rec-icon">
 						<Icon name="spark" size={12} />
@@ -126,8 +109,7 @@ const ringOffset = RING_C * (1 - Math.min(Math.max(progress, 0), 100) / 100);
 					</div>
 				)}
 
-				<span class="panel-sticker panel-sticker--gratis">{badge}</span>
-			</>
+				</>
 		)
 	}
 </div>
@@ -227,22 +209,6 @@ const ringOffset = RING_C * (1 - Math.min(Math.max(progress, 0), 100) / 100);
 	:global(.js) :global(.reveal:not(.is-visible)) .ring-progress {
 		stroke-dashoffset: var(--c);
 		transition: none;
-	}
-
-	.practice-chips {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 6px;
-		margin: 16px 0 14px;
-	}
-
-	.chip {
-		padding: 5px 9px;
-		border-radius: 999px;
-		background: var(--blue-soft);
-		color: var(--blue);
-		font-size: 9px;
-		font-weight: 700;
 	}
 
 	.practice-rec {
@@ -367,16 +333,6 @@ const ringOffset = RING_C * (1 - Math.min(Math.max(progress, 0), 100) / 100);
 		justify-content: space-between;
 		gap: 8px;
 		margin-bottom: 10px;
-	}
-
-	.practice--compact .practice-chips {
-		gap: 5px;
-		margin: 0 0 11px;
-	}
-
-	.practice--compact .chip {
-		padding: 4px 8px;
-		font-size: 8px;
 	}
 
 	.practice--compact .practice-row {

@@ -8,6 +8,11 @@ const stats = [
 ---
 
 <section class="stats" aria-label="Statistik Ascendemy">
+	<div class="polar-layer polar-layer--night" aria-hidden="true">
+		<span class="polar-ribbon polar-ribbon--1"></span>
+		<span class="polar-ribbon polar-ribbon--2"></span>
+		<span class="polar-stars"></span>
+	</div>
 	<div class="container">
 		<div class="stats-grid" data-stagger>
 			{stats.map((stat) => (
@@ -75,6 +80,8 @@ const stats = [
 
 <style>
 	.stats {
+		position: relative;
+		isolation: isolate;
 		padding: 72px 0;
 		background: var(--ink);
 		color: #fff;

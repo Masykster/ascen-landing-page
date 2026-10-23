@@ -1,7 +1,6 @@
 ---
 import { testimonials } from '../../data/testimonials';
 import Button from '../ui/Button.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 import TestimonialCard from './TestimonialCard.astro';
 
 const featured = testimonials.find((item) => item.featured) ?? testimonials[0];
@@ -12,7 +11,6 @@ const list = testimonials.filter((item) => item !== featured);
 	<div class="container">
 		<div class="section-head section-head--split">
 			<div>
-				<Eyebrow tone="blue" class="reveal">Kata mereka</Eyebrow>
 				<h2 class="reveal">Cerita siswa yang naik level bersama Ascendemy</h2>
 				<p class="reveal">
 					Dari latihan harian, tryout, sampai olimpiade — mereka berbagi cara belajar yang

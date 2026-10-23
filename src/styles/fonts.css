@@ -1,47 +1,32 @@
+/* --- Bricolage Grotesque — display / heading -----------------------------
+   Variable: opsz 12..96, wght 200..800 (latin).
+   Optical sizing aktif otomatis (font-optical-sizing: auto). */
+
+@font-face {
+	font-family: "Bricolage Grotesque";
+	font-style: normal;
+	font-weight: 200 800;
+	font-display: swap;
+	src: url("../assets/fonts/BricolageGrotesque-latin.woff2") format("woff2");
+}
+
+/* --- Lexend — body / teks antarmuka --------------------------------------
+   Variable: wght 100..900 (latin). */
+
+@font-face {
+	font-family: "Lexend";
+	font-style: normal;
+	font-weight: 100 900;
+	font-display: swap;
+	src: url("../assets/fonts/Lexend-latin.woff2") format("woff2");
+}
+
+/* --- Geist Mono — mono / elemen teknis (timer, kode soal, badge) --------- */
+
 @font-face {
 	font-family: "Geist Mono";
 	font-style: normal;
 	font-weight: 100 900;
 	font-display: swap;
 	src: url("../assets/fonts/GeistMono-latin-b81f341708.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "UniversalSans";
-	font-style: normal;
-	font-weight: 500;
-	font-display: swap;
-	src: url("../assets/fonts/UniversalSans-500-e8511e712b.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "UniversalSans";
-	font-style: normal;
-	font-weight: 600;
-	font-display: swap;
-	src: url("../assets/fonts/UniversalSans-600-8fbc10ca69.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "UniversalSans";
-	font-style: normal;
-	font-weight: 800;
-	font-display: swap;
-	src: url("../assets/fonts/UniversalSans-800-3b3816e279.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "Garnett";
-	font-style: normal;
-	font-weight: 600;
-	font-display: swap;
-	src: url("../assets/fonts/Garnett-Semibold-3be7b2feae.woff2") format("woff2");
-}
-
-@font-face {
-	font-family: "Garnett";
-	font-style: normal;
-	font-weight: 700;
-	font-display: swap;
-	src: url("../assets/fonts/Garnett-Semibold-3be7b2feae.woff2") format("woff2");
 }

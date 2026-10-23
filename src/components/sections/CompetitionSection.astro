@@ -3,7 +3,6 @@ import { Image } from 'astro:assets';
 import competitionImage from '../../assets/images/Carousel-Kompetisi.webp';
 import Button from '../ui/Button.astro';
 import CheckList from '../ui/CheckList.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 import Icon from '../ui/Icon.astro';
 import SplitLayout from '../ui/SplitLayout.astro';
 
@@ -16,6 +15,10 @@ const benefits = [
 ---
 
 <section class="section" id="kompetisi">
+	<div class="polar-layer polar-layer--soft" aria-hidden="true">
+		<span class="polar-glow polar-glow--tr"></span>
+		<span class="polar-glow polar-glow--bl"></span>
+	</div>
 	<SplitLayout>
 		<Fragment slot="media">
 			<div class="media-frame">
@@ -36,7 +39,6 @@ const benefits = [
 			</div>
 		</Fragment>
 
-		<Eyebrow tone="blue" class="reveal">Kompetisi</Eyebrow>
 		<h2 class="reveal">Dominasi kompetisi, bangun portofolio untuk kampus impian</h2>
 		<p class="reveal">
 			Olimpiade matematika bukan sekadar ajang juara. Sertifikat dan kemampuan pemecahan masalah
@@ -103,7 +105,7 @@ const benefits = [
 	.media-badge .badge-icon {
 		width: 30px;
 		height: 30px;
-		border-radius: 9px;
+		border-radius: 10px;
 		display: grid;
 		place-items: center;
 		background: var(--orange-soft);

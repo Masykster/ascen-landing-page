@@ -2,7 +2,6 @@
 import Button from '../ui/Button.astro';
 import CheckList from '../ui/CheckList.astro';
 import ExamPanel from '../ui/ExamPanel.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 import SplitLayout from '../ui/SplitLayout.astro';
 
 const benefits = [
@@ -14,6 +13,10 @@ const benefits = [
 ---
 
 <section class="section section--soft" id="tryout">
+	<div class="polar-layer polar-layer--soft" aria-hidden="true">
+		<span class="polar-glow polar-glow--tr"></span>
+		<span class="polar-glow polar-glow--bl"></span>
+	</div>
 	<SplitLayout reverse>
 		<div slot="media" class="panel-stage panel-stage--orange">
 			<ExamPanel
@@ -30,7 +33,6 @@ const benefits = [
 			/>
 		</div>
 
-		<Eyebrow class="reveal">Tryout</Eyebrow>
 		<h2 class="reveal">Rasakan ujian sesungguhnya, sebelum hari-H</h2>
 		<p class="reveal">
 			Tryout TKA dan UTBK dengan antarmuka Computer Based Test, timer, dan analisis hasil. Ketahui

@@ -1,7 +1,6 @@
 ---
 import Button from '../ui/Button.astro';
 import CheckList from '../ui/CheckList.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 import PracticePanel from '../ui/PracticePanel.astro';
 import SplitLayout from '../ui/SplitLayout.astro';
 
@@ -14,13 +13,15 @@ const benefits = [
 ---
 
 <section class="section" id="latihan">
+	<div class="polar-layer polar-layer--soft" aria-hidden="true">
+		<span class="polar-glow polar-glow--tr"></span>
+		<span class="polar-glow polar-glow--bl"></span>
+	</div>
 	<SplitLayout>
 		<div slot="media" class="panel-stage panel-stage--blue">
 			<PracticePanel
 				title="Latihan Matematika"
 				subtitle="SMA Kelas 12 · 84 paket · 840 soal"
-				badge="Gratis"
-				chips={['Aljabar', 'Geometri', 'Statistika', 'Peluang']}
 				rows={[
 					{ label: 'Persamaan linear', value: 84 },
 					{ label: 'Fungsi kuadrat', value: 72 },
@@ -33,7 +34,6 @@ const benefits = [
 			/>
 		</div>
 
-		<Eyebrow tone="blue" class="reveal">Latihan</Eyebrow>
 		<h2 class="reveal">Latihan yang menyesuaikan levelmu</h2>
 		<p class="reveal">
 			Mulai dari topik yang paling sering keluar. Setiap jawaban dilengkapi pembahasan agar kamu

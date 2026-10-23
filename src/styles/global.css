@@ -14,8 +14,8 @@
 	--blue: #2563eb;
 	--blue-soft: #eef4ff;
 	--green-soft: #edf7ee;
-	--font-body: "UniversalSans", "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-	--font-display: "Garnett", "UniversalSans", Georgia, serif;
+	--font-body: "Lexend", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+	--font-display: "Bricolage Grotesque", "Lexend", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 	--font-mono: "Geist Mono", "SFMono-Regular", Consolas, monospace;
 	--radius: 24px;
 	--shadow: 0 24px 60px -32px rgba(35, 39, 46, 0.32);
@@ -174,6 +174,8 @@ button {
 }
 
 .section {
+	position: relative;
+	isolation: isolate;
 	padding: 96px 0;
 	overflow-x: clip;
 }
@@ -185,6 +187,143 @@ button {
 
 .section--soft {
 	background: linear-gradient(180deg, #fdfdfd 0%, #f4f9ff 22%, #f6faff 78%, #fdfdfd 100%);
+}
+
+/* --- polar backdrop — latar tema kutub, dipakai lintas komponen --------- */
+
+.polar-layer {
+	position: absolute;
+	inset: 0;
+	z-index: -1;
+	overflow: hidden;
+	pointer-events: none;
+}
+
+/* pita aurora versi malam — untuk band gelap (CtaBand / StatsBand) */
+.polar-ribbon {
+	position: absolute;
+	left: -10%;
+	width: 120%;
+	border-radius: 50%;
+	filter: blur(46px);
+	animation: polar-drift 20s ease-in-out infinite alternate;
+	will-change: translate;
+}
+
+.polar-ribbon--1 {
+	top: 6%;
+	height: 140px;
+	rotate: -4deg;
+	opacity: 0.5;
+	background: linear-gradient(
+		90deg,
+		transparent 2%,
+		rgba(56, 189, 248, 0.5) 30%,
+		rgba(45, 212, 191, 0.36) 55%,
+		rgba(99, 102, 241, 0.46) 78%,
+		transparent 98%
+	);
+}
+
+.polar-ribbon--2 {
+	top: 55%;
+	height: 170px;
+	rotate: 3deg;
+	opacity: 0.4;
+	animation-duration: 27s;
+	animation-delay: -9s;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		rgba(99, 102, 241, 0.4) 26%,
+		rgba(56, 189, 248, 0.44) 58%,
+		rgba(255, 232, 154, 0.22) 84%,
+		transparent 100%
+	);
+}
+
+/* bintik bintang/salju statis di atas band gelap */
+.polar-stars {
+	position: absolute;
+	inset: 0;
+	background-image:
+		radial-gradient(
+			circle 1.6px at 50% 50%,
+			rgba(255, 255, 255, 0.9) 0%,
+			rgba(255, 255, 255, 0) 70%
+		),
+		radial-gradient(
+			circle 1.2px at 50% 50%,
+			rgba(200, 226, 255, 0.85) 0%,
+			rgba(200, 226, 255, 0) 70%
+		);
+	background-size: 88px 108px, 136px 156px;
+	background-position: 20px 0, 58px 34px;
+}
+
+@keyframes polar-drift {
+	from {
+		translate: -2% -5px;
+	}
+
+	to {
+		translate: 2% 6px;
+	}
+}
+
+/* glow lembut — section netral (statis, tanpa animasi) */
+.polar-glow {
+	position: absolute;
+	width: 460px;
+	height: 360px;
+	border-radius: 50%;
+	filter: blur(62px);
+	opacity: 0.13;
+}
+
+.polar-glow--tr {
+	top: -110px;
+	right: -70px;
+	background: radial-gradient(circle, rgba(56, 189, 248, 0.6) 0%, rgba(56, 189, 248, 0) 70%);
+}
+
+.polar-glow--bl {
+	bottom: -130px;
+	left: -90px;
+	background: radial-gradient(circle, rgba(255, 214, 110, 0.6) 0%, rgba(255, 214, 110, 0) 70%);
+}
+
+/* salju beku — titik tint biru es agar terbaca di atas base krem */
+.polar-layer--frost {
+	background-image:
+		radial-gradient(
+			circle 3.2px at 50% 50%,
+			rgba(160, 200, 255, 0.95) 0%,
+			rgba(160, 200, 255, 0) 70%
+		),
+		radial-gradient(
+			circle 2.4px at 50% 50%,
+			rgba(207, 228, 255, 1) 0%,
+			rgba(207, 228, 255, 0) 70%
+		),
+		radial-gradient(
+			circle 1.8px at 50% 50%,
+			rgba(255, 255, 255, 0.9) 0%,
+			rgba(255, 255, 255, 0) 70%
+		);
+	background-size: 110px 170px, 156px 230px, 92px 136px;
+	background-position: 24px 0, 64px 0, 8px 0;
+	animation: polar-frost 22s linear infinite;
+	mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 70%, transparent 98%);
+	-webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 14%, #000 70%, transparent 98%);
+	will-change: background-position;
+}
+
+@keyframes polar-frost {
+	/* offset y = tinggi tile → loop mulus */
+	to {
+		background-position: 24px 170px, 64px 230px, 8px 136px;
+	}
 }
 
 .mock-panel {
@@ -203,15 +342,6 @@ button {
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: #8a8f99;
-}
-
-.mock-tag {
-	padding: 3px 7px;
-	border-radius: 999px;
-	background: var(--orange-soft);
-	color: var(--orange-deep);
-	font-size: 9px;
-	font-weight: 800;
 }
 
 /* --- shared panel kit --------------------------------------------------- */
@@ -281,10 +411,6 @@ button {
 	animation: arrive 0.72s var(--ease-out) both;
 }
 
-.js .is-arriving .eyebrow {
-	animation: arrive 0.72s var(--ease-out) 0.09s both;
-}
-
 @keyframes arrive {
 	from {
 		opacity: 0.12;
@@ -315,8 +441,12 @@ button {
 }
 
 .status-label {
+	padding: 4px 8px;
+	border-radius: 8px;
+	background: rgba(35, 39, 46, 0.05);
+	font-family: var(--font-mono);
 	font-size: 9px;
-	font-weight: 800;
+	font-weight: 700;
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	color: var(--panel-accent, var(--blue));
@@ -327,44 +457,6 @@ button {
 	font-family: var(--font-mono);
 	font-size: 9px;
 	color: #9aa0ab;
-}
-
-.panel-sticker {
-	position: absolute;
-	top: -14px;
-	right: 24px;
-	z-index: 3;
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	padding: 6px 12px;
-	border-radius: 999px;
-	font-size: 9px;
-	font-weight: 800;
-	letter-spacing: 0.1em;
-	text-transform: uppercase;
-	box-shadow: 0 12px 22px -12px rgba(35, 39, 46, 0.6);
-	transform: rotate(6deg);
-}
-
-.panel-sticker--gratis {
-	background: var(--orange);
-	color: #fff;
-}
-
-.panel-sticker--live {
-	background: var(--ink);
-	color: #fff;
-	transform: rotate(-6deg);
-}
-
-.live-dot {
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
-	background: #f87171;
-	animation: status-pulse 1.8s ease-in-out infinite;
-	--pulse: rgba(248, 113, 113, 0.5);
 }
 
 @keyframes status-pulse {
@@ -388,15 +480,6 @@ button {
 		width: 74%;
 		right: -12%;
 		bottom: -8%;
-	}
-}
-
-@media (max-width: 640px) {
-	.panel-sticker {
-		top: -12px;
-		right: 16px;
-		padding: 5px 10px;
-		font-size: 8px;
 	}
 }
 
@@ -617,7 +700,11 @@ button {
 	}
 
 	.hero-stage,
-	.panel-stage::before {
+	.panel-stage::before,
+	.hero-aurora .aurora,
+	.hero-snow,
+	.polar-ribbon,
+	.polar-layer--frost {
 		animation: none !important;
 	}
 

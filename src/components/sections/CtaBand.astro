@@ -1,6 +1,5 @@
 ---
 import Button from '../ui/Button.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 import Icon from '../ui/Icon.astro';
 
 const points = [
@@ -17,9 +16,13 @@ const proof = [
 ---
 
 <section class="cta-band" id="mulai">
+	<div class="polar-layer polar-layer--night" aria-hidden="true">
+		<span class="polar-ribbon polar-ribbon--1"></span>
+		<span class="polar-ribbon polar-ribbon--2"></span>
+		<span class="polar-stars"></span>
+	</div>
 	<div class="container cta-band-inner">
 		<div class="cta-band-copy">
-			<Eyebrow class="reveal">Mulai gratis hari ini</Eyebrow>
 			<h2 class="reveal">Naik kelas itu butuh latihan, bukan sekadar kebetulan</h2>
 			<p class="reveal">
 				Daftar gratis, kerjakan satu paket, lalu lihat sendiri perbedaannya dalam seminggu.
@@ -90,6 +93,7 @@ const proof = [
 <style>
 	.cta-band {
 		position: relative;
+		isolation: isolate;
 		overflow: hidden;
 		padding: 92px 0;
 		background: var(--ink);

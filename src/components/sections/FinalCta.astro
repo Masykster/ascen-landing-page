@@ -1,6 +1,5 @@
 ---
 import Button from '../ui/Button.astro';
-import Eyebrow from '../ui/Eyebrow.astro';
 import Icon from '../ui/Icon.astro';
 
 const trust = [
@@ -11,8 +10,8 @@ const trust = [
 ---
 
 <section class="cta">
+	<div class="polar-layer polar-layer--frost" aria-hidden="true"></div>
 	<div class="container cta-inner">
-		<Eyebrow class="reveal">Gratis untuk mulai</Eyebrow>
 		<h2 class="reveal">Siap naik level bersama Ascendemy?</h2>
 		<p class="reveal">
 			Bergabung dengan ribuan siswa yang sudah belajar lebih terarah. Mulai dari latihan gratis,
@@ -42,6 +41,7 @@ const trust = [
 <style>
 	.cta {
 		position: relative;
+		isolation: isolate;
 		overflow: hidden;
 		padding: 88px 0;
 		background: var(--cream);

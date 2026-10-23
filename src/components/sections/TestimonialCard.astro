@@ -70,7 +70,6 @@ const gain = testimonial.after - testimonial.before;
 						{testimonial.school} · {testimonial.city}
 					</span>
 				</div>
-				<span class:list={['testi-chip', `testi-chip--${tone}`]}>{testimonial.program}</span>
 			</header>
 
 			<p class="testi-quote">&ldquo;{testimonial.quote}&rdquo;</p>
@@ -164,27 +163,6 @@ const gain = testimonial.after - testimonial.before;
 		font-family: var(--font-mono);
 		font-size: 9px;
 		color: #9aa0ab;
-	}
-
-	.testi-chip {
-		flex: 0 0 auto;
-		padding: 4px 9px;
-		border-radius: 999px;
-		background: var(--orange-soft);
-		color: var(--orange-deep);
-		font-size: 9px;
-		font-weight: 800;
-		letter-spacing: 0.04em;
-	}
-
-	.testi-chip--blue {
-		background: var(--blue-soft);
-		color: var(--blue);
-	}
-
-	.testi-chip--green {
-		background: var(--green-soft);
-		color: #2f6b3a;
 	}
 
 	.testi-quote {
@@ -349,10 +327,6 @@ const gain = testimonial.after - testimonial.before;
 
 		.testi-head {
 			flex-wrap: wrap;
-		}
-
-		.testi-chip {
-			order: 3;
 		}
 	}
 </style>
