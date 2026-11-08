@@ -8,6 +8,8 @@ interface Props {
 	href: string;
 	variant?: 'orange' | 'blue' | 'cream';
 	class?: string;
+	/** Plat titik-titik di belakang mock. Set false untuk mock tanpa plat. */
+	plate?: boolean;
 }
 
 const {
@@ -17,6 +19,7 @@ const {
 	href,
 	variant = 'orange',
 	class: className,
+	plate = true,
 } = Astro.props;
 ---
 
@@ -29,7 +32,7 @@ const {
 	<h3>{title}</h3>
 	<p>{description}</p>
 	<span class="card-link">{linkLabel} <Icon name="arrow" size={14} /></span>
-	<div class="mock">
+	<div class:list={['mock', !plate && 'mock--plain']}>
 		<slot />
 	</div>
 </a>
@@ -121,6 +124,10 @@ const {
 		animation: mock-drift 8s ease-in-out infinite alternate;
 		box-shadow: 0 24px 44px -30px rgba(35, 39, 46, 0.5);
 		transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.3, 1);
+	}
+
+	.mock--plain::before {
+		display: none;
 	}
 
 	@keyframes mock-drift {

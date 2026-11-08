@@ -6,6 +6,7 @@ interface Props {
 	name: string;
 	amount: string;
 	period: string;
+	altPrice?: string;
 	description: string;
 	features: string[];
 	ctaLabel: string;
@@ -19,6 +20,7 @@ const {
 	name,
 	amount,
 	period,
+	altPrice,
 	description,
 	features,
 	ctaLabel,
@@ -34,6 +36,7 @@ const {
 	<span class="price-name">{name}</span>
 	<div class="price-amount">{amount}</div>
 	<p class="price-period">{period}</p>
+	{altPrice && <p class="price-alt">atau {altPrice}</p>}
 	<p class="price-desc">{description}</p>
 	<ul class="price-list">
 		{features.map((feature) => (
@@ -139,6 +142,16 @@ const {
 
 	.price-card--featured .price-period {
 		color: #a9aeb8;
+	}
+
+	.price-alt {
+		margin-top: 4px;
+		font-size: 12px;
+		color: #4d535e;
+	}
+
+	.price-card--featured .price-alt {
+		color: #d5d8de;
 	}
 
 	.price-desc {

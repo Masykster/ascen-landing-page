@@ -4,10 +4,9 @@ import type { Testimonial } from '../../data/testimonials';
 
 interface Props {
 	testimonial: Testimonial;
-	variant?: 'row' | 'featured';
 }
 
-const { testimonial, variant = 'row' } = Astro.props;
+const { testimonial } = Astro.props;
 
 const initials = testimonial.name
 	.split(' ')
@@ -26,95 +25,53 @@ const tone = toneMap[testimonial.program];
 const gain = testimonial.after - testimonial.before;
 ---
 
-{
-	variant === 'featured' ? (
-		<article class="testi-card testi-card--featured">
-			<span class="testi-mark" aria-hidden="true">
-				&ldquo;
-			</span>
-			<p class="testi-quote testi-quote--lg">&ldquo;{testimonial.quote}&rdquo;</p>
+<article class="review">
+	<header class="review-head">
+		<span class:list={['review-avatar', `review-avatar--${tone}`]} aria-hidden="true">
+			{initials}
+		</span>
+		<div class="review-id">
+			<strong>{testimonial.name}</strong>
+			<span>{testimonial.school} · {testimonial.city}</span>
+		</div>
+	</header>
 
-			<div class="testi-foot">
-				<span class:list={['testi-avatar', 'testi-avatar--lg', `testi-avatar--${tone}`]}>
-					{initials}
-				</span>
-				<div class="testi-id">
-					<strong>{testimonial.name}</strong>
-					<span>
-						{testimonial.school} · {testimonial.city}
-					</span>
-				</div>
-				<span class="testi-verified">
-					<Icon name="check" size={11} />
-					Terverifikasi
-				</span>
-			</div>
+	<p class="review-quote">&ldquo;{testimonial.quote}&rdquo;</p>
 
-			<div class="testi-result testi-result--lg">
-				<span class="testi-score">
-					<span class="testi-before">{testimonial.before}</span>
-					<Icon name="arrow" size={16} />
-					<span class="testi-after">{testimonial.after}</span>
-				</span>
-				<span class="testi-metric">{testimonial.metric}</span>
-				<span class="testi-gain">+{gain} poin</span>
-			</div>
-		</article>
-	) : (
-		<article class="testi-card testi-card--row">
-			<header class="testi-head">
-				<span class:list={['testi-avatar', `testi-avatar--${tone}`]}>{initials}</span>
-				<div class="testi-id">
-					<strong>{testimonial.name}</strong>
-					<span>
-						{testimonial.school} · {testimonial.city}
-					</span>
-				</div>
-			</header>
-
-			<p class="testi-quote">&ldquo;{testimonial.quote}&rdquo;</p>
-
-			<div class="testi-result">
-				<span class="testi-score">
-					<span class="testi-before">{testimonial.before}</span>
-					<Icon name="arrow" size={13} />
-					<span class="testi-after">{testimonial.after}</span>
-				</span>
-				<span class="testi-metric">{testimonial.metric}</span>
-				<span class="testi-gain">+{gain}</span>
-			</div>
-		</article>
-	)
-}
+	<footer class="review-result">
+		<span class="review-score">
+			<span class="review-before">{testimonial.before}</span>
+			<Icon name="arrow" size={12} />
+			<span class="review-after">{testimonial.after}</span>
+		</span>
+		<span class="review-metric">{testimonial.metric}</span>
+		<span class="review-gain">+{gain}</span>
+	</footer>
+</article>
 
 <style>
-	.testi-card {
+	.review {
 		position: relative;
+		padding: 18px 20px;
 		border: 1px solid var(--line-warm);
-		border-radius: 18px;
+		border-radius: 16px;
 		background: #fff;
 		box-shadow: 0 16px 34px -30px rgba(35, 39, 46, 0.45);
-		transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.3, 1), box-shadow 0.28s ease,
-			border-color 0.28s ease;
+		transition: border-color 0.25s ease, box-shadow 0.25s ease;
 	}
 
-	.testi-card--row {
-		padding: 18px 20px;
-	}
-
-	.testi-card--row:hover {
-		transform: translateY(-3px);
+	.review:hover {
 		border-color: #eadfce;
 		box-shadow: 0 22px 44px -30px rgba(35, 39, 46, 0.5);
 	}
 
-	.testi-head {
+	.review-head {
 		display: flex;
 		align-items: center;
 		gap: 12px;
 	}
 
-	.testi-avatar {
+	.review-avatar {
 		width: 38px;
 		height: 38px;
 		flex: 0 0 auto;
@@ -129,50 +86,44 @@ const gain = testimonial.after - testimonial.before;
 		box-shadow: 0 10px 18px -12px rgba(249, 115, 22, 0.9);
 	}
 
-	.testi-avatar--blue {
+	.review-avatar--blue {
 		background: linear-gradient(140deg, #60a5fa, #1d4ed8);
 		box-shadow: 0 10px 18px -12px rgba(37, 99, 235, 0.9);
 	}
 
-	.testi-avatar--green {
+	.review-avatar--green {
 		background: linear-gradient(140deg, #6cc47c, #2f8f45);
 		box-shadow: 0 10px 18px -12px rgba(47, 143, 69, 0.9);
 	}
 
-	.testi-avatar--lg {
-		width: 52px;
-		height: 52px;
-		font-size: 15px;
-	}
-
-	.testi-id {
+	.review-id {
 		min-width: 0;
 		flex: 1;
 	}
 
-	.testi-id strong {
+	.review-id strong {
 		display: block;
 		font-size: 13px;
 		font-weight: 700;
 		color: var(--ink);
 	}
 
-	.testi-id span {
+	.review-id span {
 		display: block;
 		margin-top: 2px;
 		font-family: var(--font-mono);
-		font-size: 9px;
+		font-size: 9.5px;
 		color: #9aa0ab;
 	}
 
-	.testi-quote {
+	.review-quote {
 		margin: 14px 0 0;
 		font-size: 13px;
-		line-height: 1.6;
+		line-height: 1.62;
 		color: #4d535e;
 	}
 
-	.testi-result {
+	.review-result {
 		display: flex;
 		align-items: center;
 		gap: 10px;
@@ -181,36 +132,36 @@ const gain = testimonial.after - testimonial.before;
 		border-top: 1px dashed #f0e9df;
 	}
 
-	.testi-score {
+	.review-score {
 		display: inline-flex;
 		align-items: center;
 		gap: 7px;
 		font-family: var(--font-mono);
-		font-size: 14px;
+		font-size: 13px;
 		font-weight: 700;
 		color: var(--ink);
 	}
 
-	.testi-score :global(svg) {
-		width: 13px;
-		height: 13px;
+	.review-score :global(svg) {
+		width: 12px;
+		height: 12px;
 		color: #b9a893;
 	}
 
-	.testi-before {
+	.review-before {
 		color: #b0b6c0;
 	}
 
-	.testi-after {
+	.review-after {
 		color: #2f8f45;
 	}
 
-	.testi-metric {
+	.review-metric {
 		font-size: 10px;
 		color: #9aa0ab;
 	}
 
-	.testi-gain {
+	.review-gain {
 		margin-left: auto;
 		padding: 3px 8px;
 		border-radius: 999px;
@@ -219,114 +170,5 @@ const gain = testimonial.after - testimonial.before;
 		font-family: var(--font-mono);
 		font-size: 9px;
 		font-weight: 700;
-	}
-
-	/* --- featured --------------------------------------------------------- */
-
-	.testi-card--featured {
-		overflow: hidden;
-		padding: 26px 28px 24px;
-		border-color: #f0e2d2;
-		border-radius: 24px 24px 24px 10px;
-		background: linear-gradient(155deg, #fff6ec 0%, #fffdfb 52%, #ffffff 100%);
-		box-shadow: 0 4px 10px -4px rgba(35, 39, 46, 0.08), 0 28px 54px -30px rgba(249, 115, 22, 0.4);
-	}
-
-	.testi-card--featured::before {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 28px;
-		right: 28px;
-		height: 3px;
-		border-radius: 0 0 4px 4px;
-		background: linear-gradient(90deg, var(--orange), #fdba74 58%, rgba(253, 186, 116, 0));
-	}
-
-	.testi-mark {
-		position: absolute;
-		top: 2px;
-		right: 16px;
-		font-family: var(--font-display);
-		font-size: 84px;
-		line-height: 1;
-		color: rgba(249, 115, 22, 0.11);
-		pointer-events: none;
-	}
-
-	.testi-quote--lg {
-		position: relative;
-		margin-top: 0;
-		font-family: var(--font-display);
-		font-size: 21px;
-		line-height: 1.42;
-		font-weight: 600;
-		letter-spacing: -0.02em;
-		color: var(--ink);
-	}
-
-	.testi-foot {
-		display: flex;
-		align-items: center;
-		gap: 13px;
-		margin-top: 22px;
-	}
-
-	.testi-verified {
-		display: inline-flex;
-		align-items: center;
-		gap: 5px;
-		margin-left: auto;
-		padding: 5px 10px;
-		border-radius: 999px;
-		background: #fff;
-		border: 1px solid #e6efe4;
-		color: #2f6b3a;
-		font-size: 9px;
-		font-weight: 800;
-		letter-spacing: 0.05em;
-		text-transform: uppercase;
-	}
-
-	.testi-verified :global(svg) {
-		width: 11px;
-		height: 11px;
-	}
-
-	.testi-result--lg {
-		margin-top: 18px;
-		padding-top: 16px;
-	}
-
-	.testi-result--lg .testi-score {
-		font-size: 22px;
-	}
-
-	.testi-result--lg .testi-score :global(svg) {
-		width: 16px;
-		height: 16px;
-	}
-
-	@media (max-width: 640px) {
-		.testi-card--row {
-			padding: 16px;
-		}
-
-		.testi-card--featured {
-			padding: 22px 18px 20px;
-			border-radius: 20px 20px 20px 8px;
-		}
-
-		.testi-quote--lg {
-			font-size: 18px;
-		}
-
-		.testi-mark {
-			font-size: 76px;
-		}
-
-		.testi-head {
-			flex-wrap: wrap;
-		}
 	}
 </style>

@@ -1,14 +1,44 @@
 ---
 import CustomCursor from '../ui/CustomCursor.astro';
-import ExamPanel from '../ui/ExamPanel.astro';
 import Icon from '../ui/Icon.astro';
-import PracticePanel from '../ui/PracticePanel.astro';
 import FeatureCard from './FeatureCard.astro';
 
 const amoBenefits = [
 	{ icon: 'monitor', tone: 'orange', name: '100% online', meta: 'SMA/SMK' },
 	{ icon: 'spark', tone: 'blue', name: 'E-sertifikat', meta: 'Semua peserta' },
 	{ icon: 'trophy', tone: 'green', name: 'Hadiah uang tunai', meta: 'Juara umum' },
+];
+
+const bundleLayers = ['front', 'back-a', 'back-b'];
+
+const tryoutBundles = [
+	{
+		src: 'https://cbt.ascendemy.id/storage/bundles/01M0EN8N5V63VY9WE57HTMMJFQ.png',
+		alt: 'Paket Tryout TKA & UTBK 1',
+	},
+	{
+		src: 'https://cbt.ascendemy.id/storage/bundles/01KN4R15X5KRF8B0ZX9PR1MY0N.png',
+		alt: 'Paket Tryout UTBK 2',
+	},
+	{
+		src: 'https://cbt.ascendemy.id/storage/bundles/01KN4QXJHPB9P6813Z9AER6DJ9.png',
+		alt: 'Paket Tryout UTBK 3',
+	},
+];
+
+const latihanBundles = [
+	{
+		src: 'https://cbt.ascendemy.id/storage/bundles/01KK89D682Y2T9YY9TQC4SJY8N.webp',
+		alt: 'Paket Latihan Soal Matematika 1',
+	},
+	{
+		src: 'https://cbt.ascendemy.id/storage/bundles/01KN38WY81CFHAZ9X3P3XPCH0E.png',
+		alt: 'Paket Latihan Soal Matematika 2',
+	},
+	{
+		src: 'https://cbt.ascendemy.id/storage/bundles/01KZN9RKDRJMNE5PZWAS8CB2J6.png',
+		alt: 'Paket Latihan Soal Matematika 3',
+	},
 ];
 ---
 
@@ -60,18 +90,21 @@ const amoBenefits = [
 				description="Simulasi ujian dengan timer, analisis skor, dan pembahasan. Rasakan pengalaman Computer Based Test yang sesungguhnya."
 				linkLabel="Mulai tryout"
 				href="https://cbt.ascendemy.id/tryout"
+				plate={false}
 			>
-				<ExamPanel
-					compact
-					title="Tryout TKA · Matematika"
-					timer="00:42:18"
-					question="Jika 2x + 5 = 17, nilai x adalah…"
-					options={['A. 4', 'B. 5', 'C. 6', 'D. 7']}
-					correctIndex={2}
-					progress={45}
-					currentQuestion={9}
-					totalQuestions={20}
-				/>
+				<div class="bundle-stack">
+					{tryoutBundles.map((image, index) => (
+						<img
+							class:list={['bundle-card', `bundle-card--${bundleLayers[index]}`]}
+							src={image.src}
+							alt={image.alt}
+							width="1000"
+							height="1481"
+							loading="lazy"
+							decoding="async"
+						/>
+					))}
+				</div>
 			</FeatureCard>
 
 			<FeatureCard
@@ -81,17 +114,21 @@ const amoBenefits = [
 				description="Ribuan soal matematika dari SMP hingga SMA, lengkap dengan pembahasan langkah demi langkah."
 				linkLabel="Mulai latihan"
 				href="https://cbt.ascendemy.id/latihan"
+				plate={false}
 			>
-				<PracticePanel
-					compact
-					title="Latihan Matematika"
-					rows={[
-						{ label: 'Persamaan linear', value: 84 },
-						{ label: 'Fungsi kuadrat', value: 72 },
-						{ label: 'Peluang', value: 61 },
-					]}
-					progress={72}
-				/>
+				<div class="bundle-stack">
+					{latihanBundles.map((image, index) => (
+						<img
+							class:list={['bundle-card', `bundle-card--${bundleLayers[index]}`]}
+							src={image.src}
+							alt={image.alt}
+							width="1000"
+							height="1481"
+							loading="lazy"
+							decoding="async"
+						/>
+					))}
+				</div>
 			</FeatureCard>
 		</div>
 	</div>
@@ -234,6 +271,59 @@ const amoBenefits = [
 		border-radius: 50%;
 		background: #46a758;
 		box-shadow: 0 0 0 3px rgba(70, 167, 88, 0.16);
+	}
+
+	.bundle-stack {
+		position: relative;
+		width: min(100%, 180px);
+		aspect-ratio: 2 / 3;
+		margin: 0 auto;
+	}
+
+	.bundle-card {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		border: 1px solid rgba(255, 255, 255, 0.75);
+		border-radius: 14px;
+		background: #fff;
+		box-shadow: 0 16px 30px -22px rgba(35, 39, 46, 0.6);
+		transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+		will-change: transform;
+	}
+
+	.bundle-card--front {
+		z-index: 3;
+	}
+
+	.bundle-card--back-a {
+		z-index: 2;
+		transform: translate(-15%, 4%) rotate(-6deg) scale(0.96);
+	}
+
+	.bundle-card--back-b {
+		z-index: 1;
+		transform: translate(15%, -4%) rotate(7deg) scale(0.93);
+	}
+
+	/* :global dipakai karena .feature-card dirender oleh komponen FeatureCard,
+	   jadi elemen itu tidak membawa scope id dari stylesheet ini. */
+	:global(.feature-card:hover) .bundle-card--back-a {
+		transform: translate(-26%, 6%) rotate(-11deg) scale(0.96);
+	}
+
+	:global(.feature-card:hover) .bundle-card--back-b {
+		transform: translate(26%, -6%) rotate(11deg) scale(0.93);
+	}
+
+	:global(.feature-card:focus-visible) .bundle-card--back-a {
+		transform: translate(-26%, 6%) rotate(-11deg) scale(0.96);
+	}
+
+	:global(.feature-card:focus-visible) .bundle-card--back-b {
+		transform: translate(26%, -6%) rotate(11deg) scale(0.93);
 	}
 
 	@media (max-width: 900px) {

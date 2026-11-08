@@ -3,16 +3,26 @@ import { testimonials } from '../../data/testimonials';
 import Button from '../ui/Button.astro';
 import TestimonialCard from './TestimonialCard.astro';
 
-const featured = testimonials.find((item) => item.featured) ?? testimonials[0];
-const list = testimonials.filter((item) => item !== featured);
+// Kolom memakai subset data yang dirotasi supaya tiap kolom punya isi cukup
+// untuk loop marquee, tanpa mengubah data testimoni.
+const shifted = (offset: number) =>
+	testimonials.map((_, index) => testimonials[(index + offset) % testimonials.length]);
+
+const columns = [
+	{ items: shifted(0).slice(0, 3), duration: 26, reverse: false },
+	{ items: shifted(1).slice(0, 3), duration: 30, reverse: true },
+	{ items: shifted(2).slice(0, 3), duration: 24, reverse: false },
+];
+
+const mobileItems = testimonials;
 ---
 
 <section class="section" id="testimoni">
 	<div class="container">
 		<div class="section-head section-head--split">
-			<div>
-				<h2 class="reveal">Cerita siswa yang naik level bersama Ascendemy</h2>
-				<p class="reveal">
+			<div class="reveal">
+				<h2>Cerita siswa yang naik level bersama Ascendemy</h2>
+				<p>
 					Dari latihan harian, tryout, sampai olimpiade — mereka berbagi cara belajar yang
 					paling efektif untuk naik kelas.
 				</p>
@@ -28,12 +38,38 @@ const list = testimonials.filter((item) => item !== featured);
 			</Button>
 		</div>
 
-		<div class="testi-grid">
-			<div class="testi-list reveal reveal-list">
-				{list.map((item) => <TestimonialCard testimonial={item} />)}
-			</div>
-			<div class="testi-feature reveal reveal-card">
-				<TestimonialCard testimonial={featured} variant="featured" />
+		<div class="testi-marquee reveal reveal-card">
+			{
+				columns.map((column) => (
+					<div
+						class:list={['marquee', column.reverse && 'is-reverse']}
+						style={`--duration:${column.duration}s`}
+					>
+						<div class="marquee-track">
+							<div class="marquee-group">
+								{column.items.map((item) => (
+									<TestimonialCard testimonial={item} />
+								))}
+							</div>
+							<div class="marquee-group" aria-hidden="true">
+								{column.items.map((item) => (
+									<TestimonialCard testimonial={item} />
+								))}
+							</div>
+						</div>
+					</div>
+				))
+			}
+
+			<div class="marquee marquee--mobile" style="--duration:28s">
+				<div class="marquee-track">
+					<div class="marquee-group">
+						{mobileItems.map((item) => <TestimonialCard testimonial={item} />)}
+					</div>
+					<div class="marquee-group" aria-hidden="true">
+						{mobileItems.map((item) => <TestimonialCard testimonial={item} />)}
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -90,32 +126,121 @@ const list = testimonials.filter((item) => item !== featured);
 		margin-left: 0;
 	}
 
-	.testi-grid {
+	/* --- vertical marquee -------------------------------------------------- */
+
+	.testi-marquee {
+		position: relative;
 		display: grid;
-		grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
-		gap: 22px;
-		align-items: start;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 16px;
+		height: clamp(420px, 42vw, 520px);
 	}
 
-	.testi-list {
-		display: grid;
+	.testi-marquee::before,
+	.testi-marquee::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		z-index: 2;
+		height: 96px;
+		pointer-events: none;
+	}
+
+	.testi-marquee::before {
+		top: 0;
+		background: linear-gradient(180deg, var(--bg), rgba(253, 253, 253, 0));
+	}
+
+	.testi-marquee::after {
+		bottom: 0;
+		background: linear-gradient(0deg, var(--bg), rgba(253, 253, 253, 0));
+	}
+
+	.marquee {
+		position: relative;
+		height: 100%;
+		overflow: hidden;
+	}
+
+	.marquee-track {
+		display: flex;
+		flex-direction: column;
+		animation: testi-scroll var(--duration, 26s) linear infinite;
+		will-change: transform;
+	}
+
+	.marquee.is-reverse .marquee-track {
+		animation-direction: reverse;
+	}
+
+	.marquee-group {
+		display: flex;
+		flex-direction: column;
 		gap: 14px;
+		padding-bottom: 14px;
 	}
 
-	@media (min-width: 1100px) {
-		.testi-feature {
-			position: sticky;
-			top: 110px;
+	.marquee--mobile {
+		display: none;
+	}
+
+	@keyframes testi-scroll {
+		from {
+			transform: translateY(0);
+		}
+		to {
+			transform: translateY(-50%);
 		}
 	}
 
-	@media (max-width: 900px) {
-		.testi-grid {
-			grid-template-columns: 1fr;
+	@media (hover: hover) {
+		.marquee:hover .marquee-track {
+			animation-play-state: paused;
+		}
+	}
+
+	@media (max-width: 1080px) {
+		.testi-marquee {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 
-		.testi-feature {
-			order: -1;
+		.marquee:nth-child(3) {
+			display: none;
+		}
+	}
+
+	@media (max-width: 680px) {
+		.testi-marquee {
+			grid-template-columns: minmax(0, 1fr);
+			height: 440px;
+		}
+
+		.marquee:not(.marquee--mobile) {
+			display: none;
+		}
+
+		.marquee--mobile {
+			display: block;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.marquee {
+			overflow-y: auto;
+		}
+
+		.marquee-track {
+			animation: none;
+		}
+
+		.marquee-group[aria-hidden='true'] {
+			display: none;
+		}
+
+		.testi-marquee::before,
+		.testi-marquee::after {
+			display: none;
 		}
 	}
 

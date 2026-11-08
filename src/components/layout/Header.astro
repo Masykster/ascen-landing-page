@@ -45,9 +45,37 @@ import Icon from '../ui/Icon.astro';
 
 	<div class="nav-mobile" id="nav-mobile">
 		<div class="container">
-			{navLinks.map((link) => <a href={link.href}>{link.label}</a>)}
-			<a href="https://cbt.ascendemy.id/">Masuk</a>
-			<Button href="https://cbt.ascendemy.id/register">Daftar gratis</Button>
+			<nav class="mobile-nav" aria-label="Navigasi mobile">
+				{
+					navLinks.map((link) => {
+						const letters = [...link.label];
+						return (
+							<a class="mobile-link" href={link.href} aria-label={link.label}>
+								<span class="mobile-roll" aria-hidden="true">
+									{letters.map((char, index) => {
+										const delay = Math.abs(index - (letters.length - 1) / 2) * 0.035;
+										return (
+											<span
+												class="roll-char"
+												style={`--delay:${delay.toFixed(3)}s`}
+											>
+												<span class="roll-face">{char === ' ' ? '\u00A0' : char}</span>
+												<span class="roll-face roll-face--ghost">
+													{char === ' ' ? '\u00A0' : char}
+												</span>
+											</span>
+										);
+									})}
+								</span>
+							</a>
+						);
+					})
+				}
+			</nav>
+			<div class="mobile-actions">
+				<Button href="https://cbt.ascendemy.id/" icon="arrow">Masuk</Button>
+				<Button variant="ghost" href="https://cbt.ascendemy.id/register">Daftar gratis</Button>
+			</div>
 		</div>
 	</div>
 </header>
@@ -66,18 +94,25 @@ import Icon from '../ui/Icon.astro';
 		window.addEventListener('scroll', onScroll, { passive: true });
 
 		if (toggle && mobileNav) {
-			toggle.addEventListener('click', () => {
-				const open = mobileNav.classList.toggle('is-open');
+			const setOpen = (open: boolean) => {
+				mobileNav.classList.toggle('is-open', open);
+				header.classList.toggle('is-menu-open', open);
+				document.body.classList.toggle('nav-open', open);
 				toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
 				toggle.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu');
+			};
+
+			toggle.addEventListener('click', () => {
+				setOpen(!mobileNav.classList.contains('is-open'));
 			});
 
 			mobileNav.addEventListener('click', (event) => {
-				const target = event.target as HTMLElement;
-				if (target.closest('a')) {
-					mobileNav.classList.remove('is-open');
-					toggle.setAttribute('aria-expanded', 'false');
-					toggle.setAttribute('aria-label', 'Buka menu');
+				if ((event.target as HTMLElement).closest('a')) setOpen(false);
+			});
+
+			document.addEventListener('keydown', (event) => {
+				if (event.key === 'Escape' && mobileNav.classList.contains('is-open')) {
+					setOpen(false);
 				}
 			});
 		}
@@ -113,26 +148,54 @@ import Icon from '../ui/Icon.astro';
 		position: sticky;
 		top: 0;
 		z-index: 100;
-		padding: 12px 0 0;
-		background: transparent;
+		padding: 0;
+		background: rgba(253, 249, 244, 0.8);
+		border-bottom: 1px solid rgba(236, 231, 223, 0.9);
+		-webkit-backdrop-filter: blur(20px) saturate(160%);
+		backdrop-filter: blur(20px) saturate(160%);
+		transition:
+			padding 0.3s ease,
+			background-color 0.3s ease,
+			border-color 0.3s ease,
+			backdrop-filter 0.3s ease;
 	}
 
 	.header-inner {
+		position: relative;
+		z-index: 1;
 		height: 68px;
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		gap: 24px;
 		padding: 8px 10px 8px 18px;
-		border: 1px solid rgba(255, 255, 255, 0.55);
+		border: 1px solid transparent;
 		border-radius: 999px;
-		background: rgba(253, 249, 244, 0.64);
-		box-shadow:
-			0 18px 40px -28px rgba(35, 39, 46, 0.45),
-			inset 0 1px 0 rgba(255, 255, 255, 0.7);
-		-webkit-backdrop-filter: blur(20px) saturate(160%);
-		backdrop-filter: blur(20px) saturate(160%);
-		transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+		background: transparent;
+		box-shadow: none;
+		transition:
+			background-color 0.25s ease,
+			border-color 0.25s ease,
+			box-shadow 0.25s ease,
+			backdrop-filter 0.25s ease;
+	}
+
+	.site-header.is-scrolled {
+		padding: 12px 0 0;
+		background: transparent;
+		border-bottom-color: transparent;
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+	}
+
+	/* menu full-screen: matikan backdrop-filter header agar overlay bisa
+	   menempel ke viewport (backdrop-filter membuat containing block) */
+	.site-header.is-menu-open {
+		background: transparent;
+		border-bottom-color: transparent;
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
+		transition: none;
 	}
 
 	.site-header.is-scrolled .header-inner {
@@ -141,6 +204,8 @@ import Icon from '../ui/Icon.astro';
 		box-shadow:
 			0 22px 48px -28px rgba(35, 39, 46, 0.5),
 			inset 0 1px 0 rgba(255, 255, 255, 0.75);
+		-webkit-backdrop-filter: blur(20px) saturate(160%);
+		backdrop-filter: blur(20px) saturate(160%);
 	}
 
 	.brand {
@@ -216,7 +281,13 @@ import Icon from '../ui/Icon.astro';
 
 	.nav-mobile {
 		display: none;
-		padding: 8px 0 0;
+		position: fixed;
+		inset: 0;
+		z-index: 0;
+		padding: 0;
+		background: var(--cream);
+		overflow-y: auto;
+		overscroll-behavior: contain;
 	}
 
 	.nav-mobile.is-open {
@@ -225,32 +296,83 @@ import Icon from '../ui/Icon.astro';
 	}
 
 	.nav-mobile .container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 24px;
+		min-height: 100%;
+		padding: 92px 8px 40px;
+	}
+
+	:global(body.nav-open) {
+		overflow: hidden;
+	}
+
+	.mobile-nav {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 2px;
+		padding: 4px 0 16px;
+	}
+
+	.mobile-link {
+		display: flex;
+		justify-content: center;
+		padding: 2px 0;
+		font-family: var(--font-display);
+		font-size: clamp(36px, 11vw, 52px);
+		font-weight: 700;
+		line-height: 0.85;
+		letter-spacing: -0.03em;
+		text-transform: uppercase;
+		color: var(--ink);
+	}
+
+	.mobile-roll {
+		display: flex;
+		line-height: 0.85;
+	}
+
+	.roll-char {
+		position: relative;
+		display: inline-block;
+		overflow: hidden;
+		height: 0.85em;
+	}
+
+	.roll-face {
+		display: block;
+		transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1);
+		transition-delay: var(--delay, 0ms);
+		will-change: transform;
+	}
+
+	.roll-face--ghost {
+		position: absolute;
+		inset: 0;
+		transform: translateY(100%);
+	}
+
+	.mobile-link:hover .roll-face,
+	.mobile-link:focus-visible .roll-face {
+		transform: translateY(-100%);
+	}
+
+	.mobile-link:hover .roll-face--ghost,
+	.mobile-link:focus-visible .roll-face--ghost {
+		transform: translateY(0);
+	}
+
+	.mobile-actions {
 		display: grid;
-		gap: 4px;
-		padding: 10px;
-		border: 1px solid rgba(255, 255, 255, 0.6);
-		border-radius: 24px;
-		background: rgba(253, 249, 244, 0.88);
-		box-shadow:
-			0 20px 45px -28px rgba(35, 39, 46, 0.45),
-			inset 0 1px 0 rgba(255, 255, 255, 0.7);
-		-webkit-backdrop-filter: blur(20px) saturate(160%);
-		backdrop-filter: blur(20px) saturate(160%);
+		gap: 8px;
+		width: min(100%, 340px);
 	}
 
-	.nav-mobile a {
-		padding: 12px 10px;
-		border-radius: 12px;
-		font-weight: 600;
-		font-size: 15px;
-	}
-
-	.nav-mobile a:hover {
-		background: rgba(255, 255, 255, 0.7);
-	}
-
-	.nav-mobile :global(.btn) {
-		margin-top: 8px;
+	.mobile-actions :global(.btn) {
+		width: 100%;
 	}
 
 	@keyframes nav-in {
@@ -265,8 +387,11 @@ import Icon from '../ui/Icon.astro';
 	}
 
 	@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-		.header-inner,
-		.nav-mobile .container {
+		.site-header {
+			background: rgba(253, 249, 244, 0.96);
+		}
+
+		.site-header.is-scrolled .header-inner {
 			background: rgba(253, 249, 244, 0.96);
 		}
 	}
