@@ -3,7 +3,6 @@ const stats = [
 	{ value: 1641, suffix: '', label: 'Paket ujian' },
 	{ value: 19975, suffix: '', label: 'Soal tersedia' },
 	{ value: 841, suffix: '+', label: 'Siswa bergabung' },
-	{ value: 98, suffix: '%', label: 'Tingkat kepuasan' },
 ];
 ---
 
@@ -23,8 +22,14 @@ const stats = [
 					<span>{stat.label}</span>
 				</div>
 			))}
+			<div class="stat reveal">
+				<strong data-traffic aria-live="polite">—</strong>
+				<span>Traffic harian</span>
+			</div>
 		</div>
-		<p class="stats-note">Data per Oktober 2026, diperbarui langsung dari platform Ascendemy.</p>
+		<p class="stats-note">
+			Data platform per Oktober 2026. Traffic harian diperbarui otomatis dari kunjungan situs.
+		</p>
 	</div>
 </section>
 
@@ -75,6 +80,43 @@ const stats = [
 
 			counters.forEach((el) => observer.observe(el));
 		}
+	}
+
+	const trafficEl = document.querySelector<HTMLElement>('[data-traffic]');
+
+	if (trafficEl) {
+		const now = new Date();
+		const pad = (value: number) => String(value).padStart(2, '0');
+		const dayKey = `traffic${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
+		const storageKey = `ascendemy-traffic-${dayKey}`;
+
+		let seenToday = false;
+
+		try {
+			seenToday = window.localStorage.getItem(storageKey) === '1';
+		} catch {
+			seenToday = false;
+		}
+
+		fetch(`https://abacus.jasoncameron.dev/${seenToday ? 'get' : 'hit'}/ascendemy.id/${dayKey}`)
+			.then((response) =>
+				response.ok ? response.json() : Promise.reject(new Error('Traffic tidak tersedia')),
+			)
+			.then((data: { value?: number }) => {
+				const value = Number(data?.value);
+				if (!Number.isFinite(value)) throw new Error('Traffic tidak tersedia');
+
+				trafficEl.textContent = value.toLocaleString('id-ID');
+
+				try {
+					window.localStorage.setItem(storageKey, '1');
+				} catch {
+					/* storage can be unavailable */
+				}
+			})
+			.catch(() => {
+				trafficEl.textContent = '—';
+			});
 	}
 </script>
 

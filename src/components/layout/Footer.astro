@@ -4,13 +4,6 @@ import logo from '../../assets/images/logo.png';
 import unesa from '../../assets/images/Unesa.png';
 import datanusa from '../../assets/images/Datanusa.png';
 import qris from '../../assets/images/qris.png';
-import bsi from '../../assets/images/bsi.svg';
-import mandiri from '../../assets/images/mandiri.svg';
-import bni from '../../assets/images/bni.svg';
-import bri from '../../assets/images/bri.svg';
-import permata from '../../assets/images/permata.svg';
-import cimb from '../../assets/images/cimb.svg';
-import gopay from '../../assets/images/gopay.svg';
 import { contactLines, socialLinks } from '../../data/site';
 import {
 	RIDGELINE_PRESETS,
@@ -77,25 +70,17 @@ const deep = tones[Math.max(1, tones.length - 2)] ?? colors.ink;
 const accent = tones[Math.max(1, tones.length - 3)] ?? colors.ink;
 
 const year = new Date().getFullYear();
+const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '/index.html';
+const resolveHref = (href: string) => (href.startsWith('#') && !isHome ? `/${href}` : href);
 
 const learnLinks: { label: string; href: string; badge?: string }[] = [
 	{ label: 'Latihan soal', href: '#latihan' },
 	{ label: 'Tryout TKA', href: '#tryout' },
-	{ label: 'Kompetisi', href: '#kompetisi' },
 	{ label: 'Semua paket', href: '#harga' },
-	{ label: 'Berita', href: '#berita' },
+	{ label: 'Berita', href: '/berita' },
 ];
 
-const paymentLogos = [
-	{ src: qris, alt: 'QRIS' },
-	{ src: bsi, alt: 'BSI' },
-	{ src: mandiri, alt: 'Mandiri' },
-	{ src: bni, alt: 'BNI' },
-	{ src: bri, alt: 'BRI' },
-	{ src: permata, alt: 'Permata Bank' },
-	{ src: cimb, alt: 'CIMB Niaga' },
-	{ src: gopay, alt: 'GoPay' },
-];
+const paymentLogos = [{ src: qris, alt: 'QRIS' }];
 
 const rootStyle = [
 	`min-height:${height}`,
@@ -132,7 +117,7 @@ const rootStyle = [
 	<div class="rdf-frame">
 		<div class="rdf-top">
 			<div class="rdf-brand">
-				<a class="rdf-logo rdf-r" style="--d:140" href="#top" aria-label="Ascendemy">
+				<a class="rdf-logo rdf-r" style="--d:140" href="/" aria-label="Ascendemy, kembali ke beranda">
 					<Image
 						src={logo}
 						alt="Ascendemy"
@@ -202,7 +187,7 @@ const rootStyle = [
 					{
 						learnLinks.map((link, li) => (
 							<li class="rdf-r" style={`--d:${330 + li * 55}`}>
-								<a class="rdf-link" href={link.href}>
+								<a class="rdf-link" href={resolveHref(link.href)}>
 									<span>{link.label}</span>
 									{link.badge ? <span class="rdf-badge">{link.badge}</span> : null}
 								</a>
@@ -243,7 +228,7 @@ const rootStyle = [
 			<div class="rdf-col">
 				<h3 class="rdf-r" style="--d:480">Pembayaran</h3>
 				<p class="rdf-pay-note rdf-r" style="--d:550">
-					Pembayaran aman melalui channel resmi.
+					Pembayaran aman melalui QRIS.
 				</p>
 				<div class="rdf-payments rdf-r" style="--d:620">
 					{
@@ -264,13 +249,11 @@ const rootStyle = [
 		<div class="rdf-bar rdf-r" style="--d:1150">
 			<p>© {year} Ascendemy. Seluruh hak cipta dilindungi.</p>
 			<div class="rdf-legal">
-				<a class="rdf-credit" href="https://ascendemy.id/kebijakan-privasi">
-					Kebijakan Privasi
-				</a>
+				<a class="rdf-credit" href="/faq">FAQ</a>
 				<span class="rdf-sep" aria-hidden="true">·</span>
-				<a class="rdf-credit" href="https://ascendemy.id/syarat-ketentuan">
-					Syarat &amp; Ketentuan
-				</a>
+				<a class="rdf-credit" href="/kebijakan-privasi">Kebijakan Privasi</a>
+				<span class="rdf-sep" aria-hidden="true">·</span>
+				<a class="rdf-credit" href="/syarat-ketentuan">Syarat &amp; Ketentuan</a>
 			</div>
 		</div>
 

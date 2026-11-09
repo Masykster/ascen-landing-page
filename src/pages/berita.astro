@@ -1,0 +1,132 @@
+---
+import Footer from '../components/layout/Footer.astro';
+import Header from '../components/layout/Header.astro';
+import NewsFeaturedCard from '../components/sections/NewsFeaturedCard.astro';
+import { allNews } from '../data/news';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+	title="Berita — Ascendemy"
+	description="Kabar terbaru seputar TKA, olimpiade, dan dunia pendidikan Indonesia dari Ascendemy."
+>
+	<Header />
+
+	<main id="main-content">
+		<section class="news-hero">
+			<div class="container">
+				<p class="eyebrow reveal">Berita</p>
+				<h1 class="reveal">Kabar terbaru dari dunia pendidikan</h1>
+				<p class="lede reveal">
+					Berita seputar TKA, olimpiade, dan tips belajar untuk membantumu mengambil keputusan
+					yang tepat.
+				</p>
+			</div>
+		</section>
+
+		<section class="section news-archive">
+			<div class="container">
+				<div class="archive-head reveal">
+					<h2>Semua berita</h2>
+					<span>{allNews.length} artikel</span>
+				</div>
+				<div class="archive-grid" data-stagger>
+					{allNews.map((item) => <NewsFeaturedCard {...item} excerpt="" />)}
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<style>
+	.news-hero {
+		position: relative;
+		padding: clamp(64px, 8.5vw, 108px) 0 clamp(44px, 5.5vw, 68px);
+		background:
+			radial-gradient(760px 360px at 88% -20%, rgba(249, 115, 22, 0.08), transparent 70%),
+			var(--cream);
+		border-bottom: 1px solid var(--line-warm);
+	}
+
+	.eyebrow {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.news-hero h1 {
+		margin: 18px 0 0;
+		max-width: 800px;
+		font-family: var(--font-display);
+		font-size: clamp(42px, 6vw, 74px);
+		font-weight: 600;
+		line-height: 1.02;
+		letter-spacing: -0.045em;
+		color: var(--ink);
+		text-wrap: balance;
+	}
+
+	.lede {
+		margin: 20px 0 0;
+		max-width: 600px;
+		font-size: 17px;
+		line-height: 1.65;
+		color: var(--muted);
+		text-wrap: pretty;
+	}
+
+	.news-archive {
+		padding: clamp(56px, 7vw, 88px) 0 clamp(72px, 9vw, 112px);
+	}
+
+	.archive-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 16px;
+		margin-bottom: 26px;
+	}
+
+	.archive-head h2 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(26px, 3.2vw, 38px);
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.archive-head span {
+		font-family: var(--font-mono);
+		font-size: 10.5px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--faint);
+		white-space: nowrap;
+	}
+
+	.archive-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+	}
+
+	@media (max-width: 760px) {
+		.archive-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.archive-head {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 6px;
+		}
+	}
+</style>

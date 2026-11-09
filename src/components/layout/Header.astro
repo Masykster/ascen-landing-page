@@ -4,11 +4,17 @@ import logo from '../../assets/images/logo.png';
 import { navLinks } from '../../data/site';
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
+
+const pathname = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isHome = pathname === '/' || pathname === '/index.html';
+const resolveHref = (href: string) => (href.startsWith('#') && !isHome ? `/${href}` : href);
+const isActive = (href: string, index: number) =>
+	href.startsWith('/') ? pathname === href.replace(/\/+$/, '') : isHome && index === 0;
 ---
 
 <header class="site-header">
 	<div class="container header-inner">
-		<a class="brand" href="#top" aria-label="Ascendemy, kembali ke atas">
+		<a class="brand" href="/" aria-label="Ascendemy, kembali ke beranda">
 			<Image
 				src={logo}
 				alt="Ascendemy"
@@ -22,7 +28,10 @@ import Icon from '../ui/Icon.astro';
 
 		<nav class="nav-desktop" aria-label="Navigasi utama">
 			{navLinks.map((link, index) => (
-				<a class:list={['nav-link', index === 0 && 'is-active']} href={link.href}>
+				<a
+					class:list={['nav-link', isActive(link.href, index) && 'is-active']}
+					href={resolveHref(link.href)}
+				>
 					{link.label}
 				</a>
 			))}
@@ -50,7 +59,7 @@ import Icon from '../ui/Icon.astro';
 					navLinks.map((link) => {
 						const letters = [...link.label];
 						return (
-							<a class="mobile-link" href={link.href} aria-label={link.label}>
+							<a class="mobile-link" href={resolveHref(link.href)} aria-label={link.label}>
 								<span class="mobile-roll" aria-hidden="true">
 									{letters.map((char, index) => {
 										const delay = Math.abs(index - (letters.length - 1) / 2) * 0.035;

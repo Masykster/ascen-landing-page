@@ -10,7 +10,7 @@ interface Props {
 	date: string;
 	category: string;
 	title: string;
-	excerpt: string;
+	excerpt?: string;
 	pinned?: boolean;
 }
 
@@ -36,14 +36,15 @@ const { href, image, alt, date, category, title, excerpt, pinned = false } = Ast
 			<span>{category}</span>
 		</div>
 		<h3>{title}</h3>
-		<p>{excerpt}</p>
+		{excerpt && <p>{excerpt}</p>}
 		<span class="news-more">Baca selengkapnya <Icon name="arrow" size={16} /></span>
 	</div>
 </a>
 
 <style>
 	.news-featured {
-		display: block;
+		display: flex;
+		flex-direction: column;
 		overflow: hidden;
 		border: 1px solid var(--line-warm);
 		border-radius: var(--radius);
@@ -98,6 +99,9 @@ const { href, image, alt, date, category, title, excerpt, pinned = false } = Ast
 	}
 
 	.news-body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
 		padding: 24px;
 	}
 
@@ -138,7 +142,8 @@ const { href, image, alt, date, category, title, excerpt, pinned = false } = Ast
 		display: inline-flex;
 		align-items: center;
 		gap: 7px;
-		margin-top: 16px;
+		margin-top: auto;
+		padding-top: 16px;
 		font-size: 13px;
 		font-weight: 700;
 		color: var(--orange-deep);
