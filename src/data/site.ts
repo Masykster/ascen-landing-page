@@ -20,7 +20,7 @@ export const navLinks: NavLink[] = [
 	{ label: 'Beranda', href: '#beranda' },
 	{ label: 'Latihan', href: '#latihan' },
 	{ label: 'Tryout', href: '#tryout' },
-	{ label: 'Berita', href: '/berita' },
+	{ label: 'Blog', href: '/blog' },
 	{ label: 'Harga', href: '#harga' },
 ];
 
