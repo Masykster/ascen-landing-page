@@ -2,7 +2,7 @@
 import Footer from '../components/layout/Footer.astro';
 import Header from '../components/layout/Header.astro';
 import NewsFeaturedCard from '../components/sections/NewsFeaturedCard.astro';
-import { allNews } from '../data/news';
+import { allNews, featuredNews } from '../data/news';
 import BaseLayout from '../layouts/BaseLayout.astro';
 ---
 
@@ -27,18 +27,132 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 		<section class="section news-archive">
 			<div class="container">
 				<div class="archive-head reveal">
-					<h2>Semua artikel</h2>
-					<span>{allNews.length} artikel</span>
+					<h2 data-news-title>Semua artikel</h2>
+					<span data-news-count>{allNews.length} artikel</span>
 				</div>
-				<div class="archive-grid" data-stagger>
+				<div class="archive-filter" data-news-filter hidden>
+					<span class="archive-filter-label">Filter tag</span>
+					<strong data-news-filter-tag></strong>
+					<a class="archive-filter-clear" href="/blog">Tampilkan semua</a>
+				</div>
+				<div class="archive-grid" data-stagger data-news-grid>
 					{allNews.map((item) => <NewsFeaturedCard {...item} excerpt="" />)}
 				</div>
+				<p class="archive-empty" data-news-empty hidden>Belum ada artikel yang dipublikasikan.</p>
+
+				<template id="blog-card-template">
+					<NewsFeaturedCard {...featuredNews} excerpt="" />
+				</template>
 			</div>
 		</section>
 	</main>
 
 	<Footer />
 </BaseLayout>
+
+<script>
+	import { articleUrl, fetchCbt, formatDate, type ApiResponse, type CbtNews } from '../lib/cbt-api';
+
+	type NewsPayload = ApiResponse<CbtNews[]>;
+
+	const grid = document.querySelector<HTMLElement>('[data-news-grid]');
+	const count = document.querySelector<HTMLElement>('[data-news-count]');
+	const title = document.querySelector<HTMLElement>('[data-news-title]');
+	const filter = document.querySelector<HTMLElement>('[data-news-filter]');
+	const filterTag = document.querySelector<HTMLElement>('[data-news-filter-tag]');
+	const empty = document.querySelector<HTMLElement>('[data-news-empty]');
+	const template = document.querySelector<HTMLTemplateElement>('#blog-card-template');
+
+	const normalizeTag = (value: string) => value.trim().toLocaleLowerCase('id-ID');
+	const activeTag = new URLSearchParams(window.location.search).get('tag')?.trim() ?? '';
+	const activeTagKey = normalizeTag(activeTag);
+
+	if (title) {
+		title.textContent = activeTag ? `Artikel dengan tag “${activeTag}”` : 'Semua artikel';
+	}
+	if (filter && filterTag) {
+		filterTag.textContent = activeTag;
+		filter.hidden = !activeTag;
+	}
+	if (activeTag) {
+		document.title = `Artikel tag “${activeTag}” — Ascendemy`;
+		if (count) count.textContent = 'Memuat artikel…';
+		if (grid) grid.hidden = true;
+	}
+
+	const buildCard = (item: CbtNews) => {
+		if (!template) return null;
+
+		const card = template.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+		if (!card) return null;
+
+		card.setAttribute('href', articleUrl(item.slug));
+
+		const image = card.querySelector<HTMLImageElement>('img');
+		if (image) {
+			if (item.cover_image_url) {
+				image.removeAttribute('srcset');
+				image.removeAttribute('sizes');
+				image.src = item.cover_image_url;
+			}
+			image.alt = item.title;
+		}
+
+		const meta = Array.from(card.querySelectorAll<HTMLElement>('.news-meta > span:not(.sep)'));
+		if (meta[0]) meta[0].textContent = formatDate(item.published_at);
+		if (meta[1]) meta[1].textContent = item.category;
+
+		const title = card.querySelector('h3');
+		if (title) title.textContent = item.title;
+
+		const pin = card.querySelector<HTMLElement>('.news-pin');
+		if (pin) pin.hidden = !item.is_pinned;
+
+		card.classList.add('is-visible');
+		return card;
+	};
+
+	if (grid && template) {
+		void fetchCbt<NewsPayload>('landing/news')
+			.then((response) => {
+				const items = activeTagKey
+					? response.data.filter((item) =>
+							(item.tags ?? []).some((tag) => normalizeTag(tag) === activeTagKey),
+						)
+					: response.data;
+
+				if (count) count.textContent = `${items.length} artikel`;
+				grid.replaceChildren();
+				grid.hidden = false;
+				if (empty) empty.hidden = true;
+
+				if (!items.length) {
+					grid.hidden = true;
+					if (empty) {
+						empty.hidden = false;
+						empty.textContent = activeTag
+							? `Belum ada artikel dengan tag “${activeTag}”.`
+							: 'Belum ada artikel yang dipublikasikan.';
+					}
+					return;
+				}
+
+				items.forEach((item) => {
+					const card = buildCard(item);
+					if (card) grid.append(card);
+				});
+			})
+			.catch(() => {
+				if (!activeTag) return;
+				if (grid) grid.hidden = true;
+				if (count) count.textContent = '0 artikel';
+				if (empty) {
+					empty.hidden = false;
+					empty.textContent = `Filter tag “${activeTag}” tidak dapat dimuat. Coba lagi.`;
+				}
+			});
+	}
+</script>
 
 <style>
 	.news-hero {
@@ -112,10 +226,72 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 		white-space: nowrap;
 	}
 
+	.archive-filter {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		margin: -8px 0 24px;
+		padding: 10px 12px;
+		border: 1px solid var(--line-warm);
+		border-radius: 14px;
+		background: #fff;
+	}
+
+	.archive-filter[hidden] {
+		display: none;
+	}
+
+	.archive-filter-label {
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.archive-filter strong {
+		display: inline-flex;
+		padding: 5px 10px;
+		border-radius: 999px;
+		background: var(--cream);
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+	}
+
+	.archive-filter-clear {
+		margin-left: auto;
+		font-size: 12px;
+		font-weight: 700;
+		color: var(--orange-deep);
+		text-decoration: none;
+	}
+
+	.archive-filter-clear:hover {
+		color: var(--orange);
+	}
+
 	.archive-grid {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 24px;
+	}
+
+	.archive-grid[hidden] {
+		display: none;
+	}
+
+	.archive-empty {
+		margin: 0;
+		padding: 28px;
+		border: 1px dashed var(--line-warm);
+		border-radius: var(--radius);
+		color: var(--muted);
+		text-align: center;
 	}
 
 	@media (max-width: 760px) {

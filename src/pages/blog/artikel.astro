@@ -1,0 +1,987 @@
+---
+import Footer from '../../components/layout/Footer.astro';
+import Header from '../../components/layout/Header.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+	title="Artikel — Ascendemy"
+	description="Artikel seputar TKA, olimpiade, dan dunia pendidikan dari Ascendemy."
+>
+	<Header />
+
+	<main id="main-content">
+		<section class="article-hero">
+			<div class="container">
+				<a class="article-back reveal" href="/blog">
+					<span aria-hidden="true">←</span> Kembali ke blog
+				</a>
+				<p class="eyebrow reveal">Blog</p>
+				<h1 class="reveal" data-article-title>Memuat artikel…</h1>
+				<p class="article-lede reveal" data-article-excerpt hidden></p>
+				<div class="article-foot reveal">
+					<div class="article-meta" data-article-meta hidden>
+						<span data-article-date></span>
+						<span class="sep" aria-hidden="true"></span>
+						<span data-article-category></span>
+						<span class="sep" aria-hidden="true"></span>
+						<span data-article-author></span>
+					</div>
+					<button
+						class="btn btn-ghost share-pill"
+						type="button"
+						data-share-button
+						aria-label="Bagikan artikel ini"
+						hidden
+					>
+						<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+							<circle cx="18" cy="5" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+							<circle cx="6" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+							<circle cx="18" cy="19" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8" />
+							<path
+								d="M8.4 10.8l7.2-4.2M8.4 13.2l7.2 4.2"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.8"
+								stroke-linecap="round"
+							/>
+						</svg>
+						<span data-share-label>Bagikan</span>
+					</button>
+				</div>
+			</div>
+		</section>
+
+		<section class="section article-section">
+			<div class="container article-layout">
+				<article>
+					<figure class="article-cover" data-article-cover hidden>
+						<img data-article-image alt="" />
+					</figure>
+
+					<div class="article-loading" data-article-loading aria-live="polite">
+						<span class="loading-line loading-line--lg"></span>
+						<span class="loading-line"></span>
+						<span class="loading-line"></span>
+						<span class="loading-line loading-line--sm"></span>
+					</div>
+
+					<div class="article-error" data-article-error hidden role="alert">
+						<p class="article-error-kicker">404</p>
+						<h2 data-article-error-title>Artikel tidak ditemukan</h2>
+						<p data-article-error-text>
+							Artikel yang kamu cari mungkin sudah dipindahkan atau belum dipublikasikan.
+						</p>
+						<a class="btn btn-primary" href="/blog">Kembali ke blog</a>
+					</div>
+
+					<div class="article-body" data-article-body></div>
+					<div class="article-tags" data-article-tags hidden></div>
+				</article>
+			</div>
+		</section>
+
+		<section class="section related-section" data-related-section hidden>
+			<div class="container">
+				<div class="related-head">
+					<div>
+						<p class="eyebrow">Blog</p>
+						<h2>Artikel Terkait</h2>
+					</div>
+					<a class="related-all" href="/blog">
+						Lihat semua artikel <span aria-hidden="true">→</span>
+					</a>
+				</div>
+
+				<div class="related-grid" data-related-grid></div>
+
+				<template id="related-card-template">
+					<a class="related-card" href="/blog">
+						<div class="related-media">
+							<span class="related-placeholder" aria-hidden="true">Ascendemy</span>
+							<img data-related-image alt="" loading="lazy" hidden />
+						</div>
+						<div class="related-body">
+							<div class="related-meta">
+								<span data-related-date></span>
+								<span class="sep" aria-hidden="true"></span>
+								<span data-related-category></span>
+							</div>
+							<h3 data-related-title></h3>
+						</div>
+					</a>
+				</template>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script>
+	import {
+		articleUrl,
+		cbtOrigin,
+		fetchCbt,
+		formatDate,
+		tagUrl,
+		type ApiResponse,
+		type CbtNews,
+		type CbtNewsDetail,
+	} from '../../lib/cbt-api';
+
+	type ArticlePayload = ApiResponse<CbtNewsDetail>;
+	type NewsListPayload = ApiResponse<CbtNews[]>;
+
+	const slug = new URLSearchParams(window.location.search).get('slug')?.trim() ?? '';
+	const titleEl = document.querySelector<HTMLElement>('[data-article-title]');
+	const excerptEl = document.querySelector<HTMLElement>('[data-article-excerpt]');
+	const metaEl = document.querySelector<HTMLElement>('[data-article-meta]');
+	const dateEl = document.querySelector<HTMLElement>('[data-article-date]');
+	const categoryEl = document.querySelector<HTMLElement>('[data-article-category]');
+	const authorEl = document.querySelector<HTMLElement>('[data-article-author]');
+	const coverEl = document.querySelector<HTMLElement>('[data-article-cover]');
+	const imageEl = document.querySelector<HTMLImageElement>('[data-article-image]');
+	const loadingEl = document.querySelector<HTMLElement>('[data-article-loading]');
+	const errorEl = document.querySelector<HTMLElement>('[data-article-error]');
+	const errorTitleEl = document.querySelector<HTMLElement>('[data-article-error-title]');
+	const errorTextEl = document.querySelector<HTMLElement>('[data-article-error-text]');
+	const bodyEl = document.querySelector<HTMLElement>('[data-article-body]');
+	const tagsEl = document.querySelector<HTMLElement>('[data-article-tags]');
+	const metaDescription = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+	const shareButton = document.querySelector<HTMLButtonElement>('[data-share-button]');
+	const shareLabel = document.querySelector<HTMLElement>('[data-share-label]');
+	const relatedSection = document.querySelector<HTMLElement>('[data-related-section]');
+	const relatedGrid = document.querySelector<HTMLElement>('[data-related-grid]');
+	const relatedTemplate = document.querySelector<HTMLTemplateElement>('#related-card-template');
+	let currentArticle: CbtNewsDetail | null = null;
+
+	const setMeta = (title: string, description: string) => {
+		document.title = `${title} — Ascendemy`;
+		if (metaDescription) metaDescription.content = description;
+	};
+
+	const showError = (title: string, message: string) => {
+		loadingEl?.remove();
+		if (titleEl) titleEl.textContent = title;
+		if (excerptEl) excerptEl.hidden = true;
+		if (metaEl) metaEl.hidden = true;
+		if (coverEl) coverEl.hidden = true;
+		if (tagsEl) tagsEl.hidden = true;
+		if (bodyEl) bodyEl.replaceChildren();
+		if (shareButton) shareButton.hidden = true;
+		if (relatedSection) relatedSection.hidden = true;
+		if (errorEl) errorEl.hidden = false;
+		if (errorTitleEl) errorTitleEl.textContent = title;
+		if (errorTextEl) errorTextEl.textContent = message;
+		setMeta(title, message);
+	};
+
+	const absoluteUrl = (value: string) => {
+		if (!value || value.startsWith('#') || /^(https?:)?\/\//i.test(value) || /^(mailto|tel):/i.test(value)) {
+			return value;
+		}
+
+		if (/^javascript:/i.test(value)) return '';
+
+		return new URL(value, `${cbtOrigin}/`).toString();
+	};
+
+	const renderContent = (html: string) => {
+		if (!bodyEl) return;
+
+		const template = document.createElement('template');
+		template.innerHTML = html ?? '';
+
+		template.content.querySelectorAll('script, style, link').forEach((node) => node.remove());
+
+		template.content.querySelectorAll<HTMLElement>('*').forEach((node) => {
+			Array.from(node.attributes).forEach((attribute) => {
+				if (/^on/i.test(attribute.name)) node.removeAttribute(attribute.name);
+			});
+		});
+
+		template.content.querySelectorAll<HTMLImageElement>('img').forEach((image) => {
+			const src = image.getAttribute('src');
+			if (src) image.src = absoluteUrl(src);
+
+			image.removeAttribute('srcset');
+			image.loading = 'lazy';
+			image.decoding = 'async';
+		});
+
+		template.content.querySelectorAll<HTMLAnchorElement>('a').forEach((link) => {
+			const href = link.getAttribute('href');
+			if (!href) return;
+
+			const absolute = absoluteUrl(href);
+			if (!absolute) link.removeAttribute('href');
+			else link.setAttribute('href', absolute);
+
+			if (/^https?:\/\//i.test(absolute) && !absolute.startsWith(cbtOrigin)) {
+				link.target = '_blank';
+				link.rel = 'noopener noreferrer';
+			}
+		});
+
+		template.content.querySelectorAll<HTMLIFrameElement>('iframe').forEach((frame) => {
+			const src = frame.getAttribute('src');
+			if (src) frame.src = absoluteUrl(src);
+
+			frame.loading = 'lazy';
+		});
+
+		template.content.querySelectorAll<HTMLSourceElement>('source').forEach((source) => {
+			const src = source.getAttribute('src');
+			if (src) source.src = absoluteUrl(src);
+		});
+
+		bodyEl.replaceChildren(template.content);
+	};
+
+	const buildRelatedCard = (item: CbtNews) => {
+		if (!relatedTemplate) return null;
+
+		const card = relatedTemplate.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+		if (!card) return null;
+
+		card.setAttribute('href', articleUrl(item.slug));
+
+		const image = card.querySelector<HTMLImageElement>('[data-related-image]');
+		const placeholder = card.querySelector<HTMLElement>('.related-placeholder');
+
+		if (image) {
+			if (item.cover_image_url) {
+				image.src = absoluteUrl(item.cover_image_url);
+				image.alt = item.title;
+				image.hidden = false;
+				if (placeholder) placeholder.hidden = true;
+			} else {
+				image.hidden = true;
+				if (placeholder) placeholder.hidden = false;
+			}
+		}
+
+		const meta = Array.from(card.querySelectorAll<HTMLElement>('.related-meta > span:not(.sep)'));
+		if (meta[0]) meta[0].textContent = formatDate(item.published_at);
+		if (meta[1]) meta[1].textContent = item.category;
+
+		const title = card.querySelector<HTMLElement>('[data-related-title]');
+		if (title) title.textContent = item.title;
+
+		return card;
+	};
+
+	const renderRelated = (items: CbtNews[], current: CbtNewsDetail) => {
+		if (!relatedSection || !relatedGrid) return;
+
+		const others = items.filter((item) => item.slug !== current.slug);
+		const selected = [
+			...others.filter((item) => item.category === current.category),
+			...others.filter((item) => item.category !== current.category),
+		].slice(0, 3);
+
+		if (!selected.length) {
+			relatedSection.hidden = true;
+			return;
+		}
+
+		const cards = selected
+			.map(buildRelatedCard)
+			.filter((card): card is HTMLElement => card !== null);
+
+		if (!cards.length) {
+			relatedSection.hidden = true;
+			return;
+		}
+
+		relatedGrid.replaceChildren(...cards);
+		relatedSection.hidden = false;
+	};
+
+	const copyArticleLink = async () => {
+		const url = window.location.href;
+		let copied = false;
+
+		try {
+			await navigator.clipboard.writeText(url);
+			copied = true;
+		} catch {
+			copied = false;
+		}
+
+		if (!copied) {
+			try {
+				const input = document.createElement('input');
+				input.value = url;
+				input.setAttribute('readonly', '');
+				input.style.position = 'fixed';
+				input.style.opacity = '0';
+				input.style.pointerEvents = 'none';
+				document.body.append(input);
+				input.select();
+				copied = document.execCommand('copy');
+				input.remove();
+			} catch {
+				copied = false;
+			}
+		}
+
+		if (shareLabel) {
+			shareLabel.textContent = copied ? 'Tautan disalin' : 'Gagal menyalin';
+			window.setTimeout(() => {
+				shareLabel.textContent = 'Bagikan';
+			}, 2200);
+		}
+	};
+
+	if (shareButton) {
+		shareButton.addEventListener('click', async () => {
+			const url = window.location.href;
+			const title = currentArticle?.title ?? document.title;
+			const text = currentArticle?.excerpt ?? '';
+
+			if (navigator.share) {
+				try {
+					await navigator.share({ title, text, url });
+					return;
+				} catch (error) {
+					if (error instanceof DOMException && error.name === 'AbortError') return;
+				}
+			}
+
+			await copyArticleLink();
+		});
+	}
+
+	const render = (article: CbtNewsDetail) => {
+		currentArticle = article;
+		if (titleEl) titleEl.textContent = article.title;
+		if (shareButton) shareButton.hidden = false;
+
+		if (excerptEl) {
+			if (article.excerpt) {
+				excerptEl.textContent = article.excerpt;
+				excerptEl.hidden = false;
+			} else {
+				excerptEl.hidden = true;
+			}
+		}
+
+		if (dateEl) dateEl.textContent = formatDate(article.published_at);
+		if (categoryEl) categoryEl.textContent = article.category;
+		if (authorEl) authorEl.textContent = article.author || 'Tim Redaksi';
+		if (metaEl) metaEl.hidden = false;
+
+		if (coverEl && imageEl && article.cover_image_url) {
+			imageEl.src = absoluteUrl(article.cover_image_url);
+			imageEl.alt = article.title;
+			coverEl.hidden = false;
+		}
+
+		renderContent(article.content);
+
+		if (tagsEl) {
+			if (article.tags?.length) {
+				const chips = article.tags.map((tag) => {
+					const chip = document.createElement('a');
+					chip.className = 'article-tag';
+					chip.href = tagUrl(tag);
+					chip.textContent = tag;
+					chip.setAttribute('aria-label', `Lihat semua artikel dengan tag ${tag}`);
+					return chip;
+				});
+
+				tagsEl.replaceChildren(...chips);
+				tagsEl.hidden = false;
+			} else {
+				tagsEl.hidden = true;
+			}
+		}
+
+		void fetchCbt<NewsListPayload>('landing/news')
+			.then((response) => renderRelated(response.data, article))
+			.catch(() => {
+				if (relatedSection) relatedSection.hidden = true;
+			});
+
+		loadingEl?.remove();
+		if (errorEl) errorEl.hidden = true;
+
+		setMeta(
+			article.title,
+			article.seo_description || article.excerpt || 'Artikel terbaru dari Ascendemy.',
+		);
+	};
+
+	if (!slug) {
+		showError(
+			'Artikel tidak ditemukan',
+			'Tautan artikel tidak lengkap. Kembali ke blog untuk memilih artikel.',
+		);
+	} else {
+		void fetchCbt<ArticlePayload>(`landing/news/${encodeURIComponent(slug)}`)
+			.then((response) => render(response.data))
+			.catch(() => {
+				showError(
+					'Artikel tidak dapat dimuat',
+					'Artikel ini belum tersedia atau koneksi ke server sedang bermasalah. Coba lagi beberapa saat lagi.',
+				);
+			});
+	}
+</script>
+
+<style>
+	.article-hero {
+		padding: clamp(56px, 7.5vw, 96px) 0 clamp(36px, 4.5vw, 56px);
+		background:
+			radial-gradient(680px 320px at 85% -10%, rgba(249, 115, 22, 0.08), transparent 72%),
+			var(--cream);
+		border-bottom: 1px solid var(--line-warm);
+	}
+
+	.article-back {
+		display: inline-flex;
+		align-items: center;
+		gap: 8px;
+		margin-bottom: 24px;
+		font-family: var(--font-mono);
+		font-size: 10.5px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.article-back:hover {
+		color: var(--orange);
+	}
+
+	.eyebrow {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.article-hero h1 {
+		margin: 16px 0 0;
+		max-width: 900px;
+		font-family: var(--font-display);
+		font-size: clamp(38px, 5.5vw, 66px);
+		font-weight: 600;
+		line-height: 1.04;
+		letter-spacing: -0.045em;
+		color: var(--ink);
+		text-wrap: balance;
+	}
+
+	.article-lede {
+		margin: 18px 0 0;
+		max-width: 720px;
+		font-size: 16.5px;
+		line-height: 1.65;
+		color: var(--muted);
+		text-wrap: pretty;
+	}
+
+	.article-foot {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		margin-top: 22px;
+	}
+
+	.article-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 10px;
+		font-family: var(--font-mono);
+		font-size: 10.5px;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		color: var(--faint);
+	}
+
+	.article-meta[hidden],
+	.article-tags[hidden] {
+		display: none;
+	}
+
+	.share-pill {
+		margin-left: auto;
+		padding: 9px 14px;
+		border-color: var(--line-warm);
+		background: #fff;
+		color: var(--ink);
+		font-size: 12px;
+		gap: 7px;
+		box-shadow: 0 10px 22px -20px rgba(35, 39, 46, 0.45);
+	}
+
+	.share-pill:hover {
+		border-color: #f0d8c4;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.share-pill svg {
+		width: 14px;
+		height: 14px;
+	}
+
+	.share-pill[hidden] {
+		display: none;
+	}
+
+	.article-meta .sep {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: #c9c2b9;
+	}
+
+	.article-section {
+		padding: clamp(44px, 6vw, 72px) 0 clamp(72px, 9vw, 112px);
+	}
+
+	.article-layout {
+		max-width: 1040px;
+		margin: 0 auto;
+	}
+
+	.article-cover {
+		margin: 0 0 30px;
+		overflow: hidden;
+		border-radius: 16px;
+		background: #f3eee8;
+	}
+
+	.article-cover img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+	}
+
+	.article-loading {
+		display: grid;
+		gap: 14px;
+		padding: 8px 0;
+	}
+
+	.loading-line {
+		display: block;
+		height: 14px;
+		border-radius: 999px;
+		background: linear-gradient(90deg, #f2ece4 0%, #fbf8f4 50%, #f2ece4 100%);
+		background-size: 200% 100%;
+		animation: article-loading 1.4s ease-in-out infinite;
+	}
+
+	.loading-line--lg {
+		width: 72%;
+		height: 24px;
+	}
+
+	.loading-line--sm {
+		width: 48%;
+	}
+
+	@keyframes article-loading {
+		to {
+			background-position: -200% 0;
+		}
+	}
+
+	.article-error {
+		padding: 20px 0 8px;
+		text-align: center;
+	}
+
+	.article-error-kicker {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		color: var(--orange-deep);
+	}
+
+	.article-error h2 {
+		margin: 12px 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(26px, 3vw, 36px);
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.article-error p:not(.article-error-kicker) {
+		margin: 12px auto 22px;
+		max-width: 480px;
+		color: var(--muted);
+		line-height: 1.65;
+	}
+
+	.article-body {
+		font-size: 16px;
+		line-height: 1.78;
+		color: var(--text);
+		overflow-wrap: anywhere;
+	}
+
+	.article-body :global(p) {
+		margin: 0 0 1.2em;
+	}
+
+	.article-body :global(h1),
+	.article-body :global(h2),
+	.article-body :global(h3),
+	.article-body :global(h4) {
+		margin: 1.4em 0 0.55em;
+		font-family: var(--font-display);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.article-body :global(h1) {
+		font-size: clamp(28px, 3.4vw, 40px);
+	}
+
+	.article-body :global(h2) {
+		font-size: clamp(24px, 3vw, 32px);
+	}
+
+	.article-body :global(h3) {
+		font-size: clamp(20px, 2.4vw, 26px);
+	}
+
+	.article-body :global(a) {
+		color: var(--orange-deep);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.article-body :global(strong) {
+		font-weight: 700;
+		color: var(--ink);
+	}
+
+	.article-body :global(ul),
+	.article-body :global(ol) {
+		margin: 0 0 1.2em;
+		padding-left: 1.35em;
+	}
+
+	.article-body :global(li) {
+		margin: 0.35em 0;
+	}
+
+	.article-body :global(blockquote) {
+		margin: 1.5em 0;
+		padding: 16px 20px;
+		border-left: 3px solid var(--orange);
+		border-radius: 0 12px 12px 0;
+		background: var(--cream);
+		color: #4d535e;
+	}
+
+	.article-body :global(blockquote p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.article-body :global(img) {
+		width: auto;
+		max-width: 100%;
+		height: auto;
+		margin: 1.5em auto;
+		border-radius: 12px;
+	}
+
+	.article-body :global(figure) {
+		margin: 1.5em 0;
+	}
+
+	.article-body :global(figcaption) {
+		margin-top: 8px;
+		font-size: 12px;
+		color: var(--faint);
+		text-align: center;
+	}
+
+	.article-body :global(hr) {
+		margin: 2em 0;
+		border: 0;
+		border-top: 1px solid var(--line-warm);
+	}
+
+	.article-body :global(pre) {
+		margin: 1.5em 0;
+		padding: 16px;
+		overflow-x: auto;
+		border-radius: 12px;
+		background: #1f242b;
+		color: #f7f3ed;
+		font-family: var(--font-mono);
+		font-size: 13px;
+		line-height: 1.6;
+	}
+
+	.article-body :global(code) {
+		padding: 0.15em 0.35em;
+		border-radius: 5px;
+		background: #f4efe8;
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+	}
+
+	.article-body :global(pre code) {
+		padding: 0;
+		background: transparent;
+		color: inherit;
+	}
+
+	.article-body :global(table) {
+		display: block;
+		width: 100%;
+		margin: 1.5em 0;
+		overflow-x: auto;
+		border-collapse: collapse;
+		font-size: 14px;
+	}
+
+	.article-body :global(th),
+	.article-body :global(td) {
+		padding: 10px 12px;
+		border: 1px solid var(--line-warm);
+		text-align: left;
+	}
+
+	.article-body :global(th) {
+		background: var(--cream);
+		color: var(--ink);
+	}
+
+	.article-body :global(iframe) {
+		max-width: 100%;
+		border: 0;
+		border-radius: 12px;
+	}
+
+	.article-body :global(video) {
+		max-width: 100%;
+		border-radius: 12px;
+	}
+
+	.article-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-top: 32px;
+		padding-top: 20px;
+		border-top: 1px solid var(--line-warm);
+	}
+
+	.article-tags :global(.article-tag) {
+		display: inline-flex;
+		align-items: center;
+		padding: 6px 10px;
+		border-radius: 999px;
+		background: var(--cream);
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		text-decoration: none;
+		transition: background 0.2s ease, color 0.2s ease;
+	}
+
+	.article-tags :global(.article-tag:hover) {
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.article-tags :global(.article-tag:focus-visible) {
+		outline: 2px solid var(--orange);
+		outline-offset: 2px;
+	}
+
+	.related-section {
+		background: var(--cream);
+		border-top: 1px solid var(--line-warm);
+	}
+
+	.related-head {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 24px;
+		margin-bottom: 28px;
+	}
+
+	.related-head h2 {
+		margin: 8px 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(28px, 3.6vw, 42px);
+		font-weight: 600;
+		line-height: 1.06;
+		letter-spacing: -0.035em;
+		color: var(--ink);
+	}
+
+	.related-all {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--orange-deep);
+		white-space: nowrap;
+	}
+
+	.related-all:hover {
+		color: var(--orange);
+	}
+
+	.related-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 20px;
+	}
+
+	.related-card {
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+		border: 1px solid var(--line-warm);
+		border-radius: 20px;
+		background: #fff;
+		transition: transform 0.25s ease, box-shadow 0.25s ease;
+	}
+
+	.related-card:hover {
+		transform: translateY(-3px);
+		box-shadow: var(--shadow);
+	}
+
+	.related-media {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 16 / 10;
+		background: linear-gradient(135deg, #f8efe4, #f3e4d2);
+	}
+
+	.related-media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.45s ease;
+	}
+
+	.related-media img[hidden] {
+		display: none;
+	}
+
+	.related-card:hover .related-media img {
+		transform: scale(1.03);
+	}
+
+	.related-placeholder {
+		position: absolute;
+		inset: 0;
+		display: grid;
+		place-items: center;
+		font-family: var(--font-display);
+		font-size: 18px;
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		color: #b45309;
+		opacity: 0.5;
+	}
+
+	.related-placeholder[hidden] {
+		display: none;
+	}
+
+	.related-body {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+		padding: 18px;
+	}
+
+	.related-meta {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		font-size: 10.5px;
+		font-weight: 600;
+		color: #8a8f99;
+	}
+
+	.related-meta .sep {
+		width: 3px;
+		height: 3px;
+		border-radius: 50%;
+		background: #c9c2b9;
+	}
+
+	.related-card h3 {
+		display: -webkit-box;
+		overflow: hidden;
+		margin: 8px 0 0;
+		font-family: var(--font-display);
+		font-size: 20px;
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: -0.025em;
+		color: var(--ink);
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 3;
+	}
+
+	@media (max-width: 900px) {
+		.related-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 640px) {
+		.article-hero {
+			padding-top: 48px;
+		}
+
+		.article-body {
+			font-size: 15px;
+		}
+
+		.article-meta {
+			font-size: 9.5px;
+		}
+
+		.related-head {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 8px;
+		}
+
+		.related-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.loading-line {
+			animation: none;
+		}
+	}
+</style>

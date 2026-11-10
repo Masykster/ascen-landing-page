@@ -1,8 +1,8 @@
 ---
 const stats = [
-	{ value: 1641, suffix: '', label: 'Paket ujian' },
-	{ value: 19975, suffix: '', label: 'Soal tersedia' },
-	{ value: 841, suffix: '+', label: 'Siswa bergabung' },
+	{ key: 'packages', value: 1641, suffix: '', label: 'Paket ujian' },
+	{ key: 'questions', value: 19975, suffix: '', label: 'Soal tersedia' },
+	{ key: 'students', value: 841, suffix: '+', label: 'Siswa bergabung' },
 ];
 ---
 
@@ -16,7 +16,7 @@ const stats = [
 		<div class="stats-grid" data-stagger>
 			{stats.map((stat) => (
 				<div class="stat reveal">
-					<strong data-count={stat.value} data-suffix={stat.suffix}>
+					<strong data-count={stat.value} data-suffix={stat.suffix} data-stat={stat.key}>
 						{stat.value.toLocaleString('id-ID') + stat.suffix}
 					</strong>
 					<span>{stat.label}</span>
@@ -28,12 +28,14 @@ const stats = [
 			</div>
 		</div>
 		<p class="stats-note">
-			Data platform per Oktober 2026. Traffic harian diperbarui otomatis dari kunjungan situs.
+			Data platform diperbarui otomatis dari CBT App. Traffic harian dihitung dari kunjungan hari ini.
 		</p>
 	</div>
 </section>
 
 <script>
+	import { fetchCbt, type ApiResponse, type CbtStats } from '../../lib/cbt-api';
+
 	const counters = Array.from(document.querySelectorAll<HTMLElement>('[data-count]'));
 	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -84,40 +86,43 @@ const stats = [
 
 	const trafficEl = document.querySelector<HTMLElement>('[data-traffic]');
 
-	if (trafficEl) {
-		const now = new Date();
-		const pad = (value: number) => String(value).padStart(2, '0');
-		const dayKey = `traffic${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}`;
-		const storageKey = `ascendemy-traffic-${dayKey}`;
+	type StatsPayload = ApiResponse<CbtStats>;
 
-		let seenToday = false;
+	const applyStats = (stats: CbtStats) => {
+		const values = {
+			packages: stats.packages,
+			questions: stats.questions,
+			students: stats.students,
+		};
 
-		try {
-			seenToday = window.localStorage.getItem(storageKey) === '1';
-		} catch {
-			seenToday = false;
+		Object.entries(values).forEach(([key, value]) => {
+			const el = document.querySelector<HTMLElement>(`[data-stat="${key}"]`);
+			if (!el) return;
+
+			el.dataset.count = String(value);
+			el.textContent = value.toLocaleString('id-ID') + (el.dataset.suffix ?? '');
+		});
+
+		if (trafficEl) {
+			trafficEl.textContent = stats.traffic_today.toLocaleString('id-ID');
 		}
+	};
 
-		fetch(`https://abacus.jasoncameron.dev/${seenToday ? 'get' : 'hit'}/ascendemy.id/${dayKey}`)
-			.then((response) =>
-				response.ok ? response.json() : Promise.reject(new Error('Traffic tidak tersedia')),
-			)
-			.then((data: { value?: number }) => {
-				const value = Number(data?.value);
-				if (!Number.isFinite(value)) throw new Error('Traffic tidak tersedia');
+	const loadStats = async () => {
+		try {
+			const response = await fetchCbt<StatsPayload>('landing/visit', { method: 'POST' });
+			applyStats(response.data);
+		} catch {
+			try {
+				const response = await fetchCbt<StatsPayload>('landing/stats');
+				applyStats(response.data);
+			} catch {
+				if (trafficEl) trafficEl.textContent = '—';
+			}
+		}
+	};
 
-				trafficEl.textContent = value.toLocaleString('id-ID');
-
-				try {
-					window.localStorage.setItem(storageKey, '1');
-				} catch {
-					/* storage can be unavailable */
-				}
-			})
-			.catch(() => {
-				trafficEl.textContent = '—';
-			});
-	}
+	void loadStats();
 </script>
 
 <style>

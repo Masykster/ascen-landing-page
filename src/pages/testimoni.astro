@@ -1,0 +1,552 @@
+---
+import Footer from '../components/layout/Footer.astro';
+import Header from '../components/layout/Header.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+	title="Testimoni — Ascendemy"
+	description="Baca cerita lengkap siswa Ascendemy tentang latihan, tryout, dan olimpiade."
+>
+	<Header />
+
+	<main id="main-content">
+		<section class="testi-hero">
+			<div class="container">
+				<p class="eyebrow reveal">Testimoni</p>
+				<h1 class="reveal">Cerita lengkap dari siswa Ascendemy</h1>
+				<p class="lede reveal">
+					Baca pengalaman mereka mengikuti latihan, tryout, dan olimpiade — langsung dalam
+					kata-kata siswa.
+				</p>
+				<div class="testi-total reveal">
+					<strong data-testimonial-count>—</strong>
+					<span>cerita siswa</span>
+				</div>
+			</div>
+		</section>
+
+		<section class="section testi-section">
+			<div class="container">
+				<div class="testi-toolbar reveal">
+					<div>
+						<h2>Semua testimoni</h2>
+						<p>Kumpulan cerita yang dibagikan siswa setelah belajar bersama Ascendemy.</p>
+					</div>
+					<a class="testi-back" href="/#testimoni">
+						Kembali ke beranda <span aria-hidden="true">→</span>
+					</a>
+				</div>
+
+				<p class="testi-loading" data-testimonial-loading aria-live="polite">Memuat testimoni…</p>
+				<div class="testimonial-grid" data-testimonial-grid hidden></div>
+				<p class="testi-empty" data-testimonial-empty hidden>
+					Belum ada testimoni yang dipublikasikan.
+				</p>
+				<p class="testi-note" data-testimonial-note hidden>
+					Menampilkan testimoni pilihan karena data terbaru belum dapat dimuat.
+				</p>
+
+				<template id="testimonial-detail-template">
+					<article class="testimonial-detail">
+						<header class="testimonial-detail-head">
+							<span class="testimonial-avatar" aria-hidden="true">
+								<img class="testimonial-avatar-img" alt="" loading="lazy" hidden />
+								<span class="testimonial-avatar-initials"></span>
+							</span>
+							<div class="testimonial-person">
+								<h3 data-testimonial-name></h3>
+								<p data-testimonial-school></p>
+							</div>
+							<span class="testimonial-rating" data-testimonial-rating role="img"></span>
+						</header>
+						<div class="testimonial-detail-meta">
+							<span class="testimonial-program" data-testimonial-program></span>
+							<span class="testimonial-score" data-testimonial-score hidden>
+								<strong data-testimonial-score-value></strong>
+								<span>Skor CBT</span>
+							</span>
+						</div>
+						<blockquote class="testimonial-detail-quote" data-testimonial-quote></blockquote>
+					</article>
+				</template>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script>
+	import {
+		cbtOrigin,
+		fetchCbt,
+		initials,
+		type ApiResponse,
+		type CbtTestimonial,
+	} from '../lib/cbt-api';
+	import { testimonials as fallbackTestimonials } from '../data/testimonials';
+
+	type TestimonialView = {
+		name: string;
+		school: string;
+		program: string;
+		quote: string;
+		score: number | null;
+		rating: number;
+		avatarUrl: string;
+	};
+
+	const grid = document.querySelector<HTMLElement>('[data-testimonial-grid]');
+	const template = document.querySelector<HTMLTemplateElement>('#testimonial-detail-template');
+	const loading = document.querySelector<HTMLElement>('[data-testimonial-loading]');
+	const empty = document.querySelector<HTMLElement>('[data-testimonial-empty]');
+	const note = document.querySelector<HTMLElement>('[data-testimonial-note]');
+	const count = document.querySelector<HTMLElement>('[data-testimonial-count]');
+
+	const assetUrl = (value: string) => {
+		const url = value.trim();
+		if (!url) return '';
+		if (/^(https?:)?\/\//i.test(url) || url.startsWith('data:')) return url;
+		return new URL(url, `${cbtOrigin}/`).toString();
+	};
+
+	const toView = (item: CbtTestimonial): TestimonialView => {
+		const score =
+			item.cbt_score === null || item.cbt_score === undefined ? null : Number(item.cbt_score);
+
+		return {
+			name: (item.student_name || 'Peserta Ascendemy').trim() || 'Peserta Ascendemy',
+			school: (item.school_name || 'Siswa Ascendemy').trim() || 'Siswa Ascendemy',
+			program: (item.subject_label || item.event_name || 'CBT').trim() || 'CBT',
+			quote: (item.quote || '').trim(),
+			score: Number.isFinite(score) ? score : null,
+			rating: Math.max(1, Math.min(5, Math.round(Number(item.rating) || 5))),
+			avatarUrl: item.avatar_url ? assetUrl(item.avatar_url) : '',
+		};
+	};
+
+	const fallbackItems: TestimonialView[] = fallbackTestimonials.map((item) => ({
+		name: item.name,
+		school: item.school,
+		program: item.program,
+		quote: item.quote,
+		score: item.score,
+		rating: item.rating,
+		avatarUrl: item.avatarUrl ? assetUrl(item.avatarUrl) : '',
+	}));
+
+	const buildCard = (item: TestimonialView) => {
+		if (!template) return null;
+
+		const card = template.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+		if (!card) return null;
+
+		const name = card.querySelector<HTMLElement>('[data-testimonial-name]');
+		if (name) name.textContent = item.name;
+
+		const school = card.querySelector<HTMLElement>('[data-testimonial-school]');
+		if (school) school.textContent = item.school;
+
+		const quote = card.querySelector<HTMLElement>('[data-testimonial-quote]');
+		if (quote) quote.textContent = `“${item.quote}”`;
+
+		const program = card.querySelector<HTMLElement>('[data-testimonial-program]');
+		if (program) program.textContent = item.program;
+
+		const rating = card.querySelector<HTMLElement>('[data-testimonial-rating]');
+		if (rating) {
+			const value = Math.max(1, Math.min(5, Math.round(item.rating || 5)));
+			rating.textContent = `${'★'.repeat(value)}${'☆'.repeat(5 - value)}`;
+			rating.setAttribute('aria-label', `${value} dari 5 bintang`);
+		}
+
+		const scoreWrap = card.querySelector<HTMLElement>('[data-testimonial-score]');
+		const scoreValue = card.querySelector<HTMLElement>('[data-testimonial-score-value]');
+		if (scoreWrap && scoreValue) {
+			if (item.score !== null && Number.isFinite(item.score)) {
+				scoreWrap.hidden = false;
+				scoreValue.textContent = item.score.toLocaleString('id-ID');
+			} else {
+				scoreWrap.hidden = true;
+			}
+		}
+
+		const avatar = card.querySelector<HTMLElement>('.testimonial-avatar');
+		const image = card.querySelector<HTMLImageElement>('.testimonial-avatar-img');
+		const initialsEl = card.querySelector<HTMLElement>('.testimonial-avatar-initials');
+
+		if (avatar) {
+			const key = item.program.toLowerCase();
+			avatar.classList.remove('testimonial-avatar--blue', 'testimonial-avatar--green');
+			if (key.includes('olimpiade') || key.includes('amo') || key.includes('kompetisi')) {
+				avatar.classList.add('testimonial-avatar--green');
+			} else if (key.includes('latihan')) {
+				avatar.classList.add('testimonial-avatar--blue');
+			}
+		}
+
+		if (image && initialsEl) {
+			if (item.avatarUrl) {
+				image.src = item.avatarUrl;
+				image.hidden = false;
+				initialsEl.hidden = true;
+			} else {
+				image.hidden = true;
+				image.removeAttribute('src');
+				initialsEl.hidden = false;
+				initialsEl.textContent = initials(item.name);
+			}
+		}
+
+		return card;
+	};
+
+	const render = (items: TestimonialView[], usingFallback = false) => {
+		if (!grid) return;
+
+		const cards = items
+			.map(buildCard)
+			.filter((card): card is HTMLElement => card !== null);
+
+		grid.replaceChildren(...cards);
+		grid.hidden = cards.length === 0;
+		if (loading) loading.hidden = true;
+		if (empty) empty.hidden = cards.length > 0;
+		if (note) note.hidden = !usingFallback;
+		if (count) count.textContent = String(cards.length);
+	};
+
+	void fetchCbt<ApiResponse<CbtTestimonial[]>>('testimonials')
+		.then((response) => {
+			const items = response.data.map(toView);
+			if (!items.length) {
+				render(fallbackItems, true);
+				return;
+			}
+			render(items);
+		})
+		.catch(() => render(fallbackItems, true));
+</script>
+
+<style>
+	.testi-hero {
+		position: relative;
+		padding: clamp(64px, 8.5vw, 108px) 0 clamp(44px, 5.5vw, 68px);
+		background:
+			radial-gradient(760px 360px at 88% -20%, rgba(249, 115, 22, 0.08), transparent 70%),
+			var(--cream);
+		border-bottom: 1px solid var(--line-warm);
+	}
+
+	.eyebrow {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.testi-hero h1 {
+		margin: 18px 0 0;
+		max-width: 820px;
+		font-family: var(--font-display);
+		font-size: clamp(42px, 6vw, 74px);
+		font-weight: 600;
+		line-height: 1.02;
+		letter-spacing: -0.045em;
+		color: var(--ink);
+		text-wrap: balance;
+	}
+
+	.lede {
+		margin: 20px 0 0;
+		max-width: 640px;
+		font-size: 17px;
+		line-height: 1.65;
+		color: var(--muted);
+		text-wrap: pretty;
+	}
+
+	.testi-total {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 8px;
+		margin-top: 24px;
+		padding: 8px 14px;
+		border: 1px solid var(--line-warm);
+		border-radius: 999px;
+		background: #fff;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.testi-total strong {
+		font-family: var(--font-display);
+		font-size: 20px;
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+		text-transform: none;
+	}
+
+	.testi-section {
+		padding: clamp(56px, 7vw, 88px) 0 clamp(72px, 9vw, 112px);
+	}
+
+	.testi-toolbar {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 24px;
+		margin-bottom: 30px;
+	}
+
+	.testi-toolbar h2 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: clamp(28px, 3.6vw, 42px);
+		font-weight: 600;
+		line-height: 1.06;
+		letter-spacing: -0.035em;
+		color: var(--ink);
+	}
+
+	.testi-toolbar p {
+		margin: 10px 0 0;
+		max-width: 540px;
+		font-size: 14px;
+		line-height: 1.6;
+		color: var(--muted);
+	}
+
+	.testi-back {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-size: 13px;
+		font-weight: 700;
+		color: var(--orange-deep);
+		white-space: nowrap;
+		text-decoration: none;
+	}
+
+	.testi-back:hover {
+		color: var(--orange);
+	}
+
+	.testi-loading {
+		margin: 0;
+		padding: 24px;
+		border: 1px dashed var(--line-warm);
+		border-radius: 16px;
+		color: var(--muted);
+		text-align: center;
+	}
+
+	.testi-loading[hidden],
+	.testimonial-grid[hidden],
+	.testi-empty[hidden],
+	.testi-note[hidden] {
+		display: none;
+	}
+
+	.testimonial-grid {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 24px;
+		align-items: start;
+	}
+
+	.testimonial-detail {
+		padding: 26px;
+		border: 1px solid var(--line-warm);
+		border-radius: 20px;
+		background: #fff;
+		box-shadow: 0 18px 40px -36px rgba(35, 39, 46, 0.45);
+	}
+
+	.testimonial-detail-head {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+	}
+
+	.testimonial-avatar {
+		position: relative;
+		display: grid;
+		place-items: center;
+		width: 46px;
+		height: 46px;
+		flex: 0 0 auto;
+		overflow: hidden;
+		border-radius: 50%;
+		background: linear-gradient(140deg, #fb923c, var(--orange-deep));
+		color: #fff;
+		font-size: 13px;
+		font-weight: 800;
+		letter-spacing: 0.02em;
+		box-shadow: 0 12px 20px -14px rgba(249, 115, 22, 0.9);
+	}
+
+	.testimonial-avatar--blue {
+		background: linear-gradient(140deg, #60a5fa, #1d4ed8);
+		box-shadow: 0 12px 20px -14px rgba(37, 99, 235, 0.9);
+	}
+
+	.testimonial-avatar--green {
+		background: linear-gradient(140deg, #6cc47c, #2f8f45);
+		box-shadow: 0 12px 20px -14px rgba(47, 143, 69, 0.9);
+	}
+
+	.testimonial-avatar-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.testimonial-avatar-img[hidden],
+	.testimonial-avatar-initials[hidden] {
+		display: none;
+	}
+
+	.testimonial-avatar-initials {
+		line-height: 1;
+	}
+
+	.testimonial-person {
+		flex: 1;
+		min-width: 0;
+	}
+
+	.testimonial-person h3 {
+		margin: 0;
+		font-family: var(--font-display);
+		font-size: 20px;
+		font-weight: 600;
+		line-height: 1.1;
+		letter-spacing: -0.025em;
+		color: var(--ink);
+	}
+
+	.testimonial-person p {
+		margin: 4px 0 0;
+		font-family: var(--font-mono);
+		font-size: 9.5px;
+		line-height: 1.45;
+		color: #9aa0ab;
+	}
+
+	.testimonial-rating {
+		flex: none;
+		color: var(--orange-deep);
+		font-size: 12px;
+		letter-spacing: 0.06em;
+		white-space: nowrap;
+	}
+
+	.testimonial-detail-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 8px;
+		margin-top: 18px;
+	}
+
+	.testimonial-program {
+		padding: 5px 9px;
+		border-radius: 999px;
+		background: var(--cream);
+		color: var(--muted);
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+	}
+
+	.testimonial-score {
+		display: inline-flex;
+		align-items: baseline;
+		gap: 5px;
+		padding: 5px 9px;
+		border-radius: 999px;
+		background: var(--green-soft);
+		color: #2f6b3a;
+		font-family: var(--font-mono);
+		font-size: 9px;
+		font-weight: 600;
+	}
+
+	.testimonial-score[hidden] {
+		display: none;
+	}
+
+	.testimonial-score strong {
+		font-size: 11px;
+		font-weight: 700;
+	}
+
+	.testimonial-detail-quote {
+		margin: 20px 0 0;
+		font-size: 16px;
+		line-height: 1.7;
+		color: var(--text);
+		overflow-wrap: anywhere;
+		text-wrap: pretty;
+	}
+
+	.testi-empty {
+		margin: 0;
+		padding: 28px;
+		border: 1px dashed var(--line-warm);
+		border-radius: 16px;
+		color: var(--muted);
+		text-align: center;
+	}
+
+	.testi-note {
+		margin: 18px 0 0;
+		font-size: 12px;
+		color: var(--faint);
+		text-align: center;
+	}
+
+	@media (max-width: 900px) {
+		.testimonial-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.testi-hero h1 {
+			font-size: clamp(36px, 9vw, 48px);
+		}
+
+		.testi-toolbar {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 10px;
+		}
+
+		.testimonial-detail {
+			padding: 20px;
+		}
+
+		.testimonial-detail-head {
+			align-items: flex-start;
+		}
+
+		.testimonial-rating {
+			font-size: 11px;
+		}
+
+		.testimonial-detail-quote {
+			font-size: 15px;
+		}
+	}
+</style>

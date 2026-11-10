@@ -27,18 +27,16 @@ const mobileItems = testimonials;
 					paling efektif untuk naik kelas.
 				</p>
 			</div>
-			<Button
-				class="reveal"
-				variant="ghost"
-				href="https://www.instagram.com/ascendemy.ofc/"
-				icon="arrow"
-				external
-			>
-				Lihat di Instagram
+			<Button class="reveal" variant="ghost" href="/testimoni" icon="arrow">
+				Lihat semua testimoni
 			</Button>
 		</div>
 
-		<div class="testi-marquee reveal reveal-card">
+		<template id="testimonial-card-template">
+			<TestimonialCard testimonial={testimonials[0]} />
+		</template>
+
+		<div class="testi-marquee reveal reveal-card" data-testimonial-marquee>
 			{
 				columns.map((column) => (
 					<div
@@ -74,6 +72,125 @@ const mobileItems = testimonials;
 		</div>
 	</div>
 </section>
+
+<script>
+	import { fetchCbt, initials, type ApiResponse, type CbtTestimonial } from '../../lib/cbt-api';
+
+	type TestimonialsPayload = ApiResponse<CbtTestimonial[]>;
+
+	const marquee = document.querySelector<HTMLElement>('[data-testimonial-marquee]');
+	const template = document.querySelector<HTMLTemplateElement>('#testimonial-card-template');
+
+	const buildCard = (item: CbtTestimonial) => {
+		if (!template) return null;
+
+		const card = template.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+		if (!card) return null;
+
+		const name = item.student_name || 'Peserta Ascendemy';
+		const school = item.school_name || 'Siswa Ascendemy';
+		const program = item.subject_label || item.event_name || 'CBT';
+		const score = item.cbt_score;
+		const rating = Math.max(1, Math.min(5, item.rating || 5));
+
+		const nameEl = card.querySelector('.review-id strong');
+		if (nameEl) nameEl.textContent = name;
+
+		const schoolEl = card.querySelector('.review-id span');
+		if (schoolEl) schoolEl.textContent = school;
+
+		const quoteEl = card.querySelector('.review-quote');
+		if (quoteEl) quoteEl.textContent = `“${item.quote ?? ''}”`;
+
+		const programEl = card.querySelector('.review-metric');
+		if (programEl) programEl.textContent = program;
+
+		const scoreEl = card.querySelector('.review-after');
+		if (scoreEl) {
+			scoreEl.textContent =
+				score !== null && Number.isFinite(Number(score))
+					? Number(score).toLocaleString('id-ID')
+					: '—';
+		}
+
+		const ratingEl = card.querySelector('.review-gain');
+		if (ratingEl) ratingEl.textContent = `★ ${rating}`;
+
+		const avatar = card.querySelector<HTMLElement>('.review-avatar');
+		const image = card.querySelector<HTMLImageElement>('.review-avatar-img');
+		const initialsEl = card.querySelector<HTMLElement>('.review-avatar-initials');
+		const key = program.toLowerCase();
+
+		if (avatar) {
+			avatar.classList.remove('review-avatar--blue', 'review-avatar--green');
+			if (key.includes('olimpiade') || key.includes('amo') || key.includes('kompetisi')) {
+				avatar.classList.add('review-avatar--green');
+			} else if (key.includes('latihan')) {
+				avatar.classList.add('review-avatar--blue');
+			}
+		}
+
+		if (image && initialsEl) {
+			if (item.avatar_url) {
+				image.src = item.avatar_url;
+				image.hidden = false;
+				initialsEl.hidden = true;
+			} else {
+				image.hidden = true;
+				image.removeAttribute('src');
+				initialsEl.hidden = false;
+				initialsEl.textContent = initials(name);
+			}
+		}
+
+		return card;
+	};
+
+	const fill = (target: HTMLElement, items: CbtTestimonial[]) => {
+		const groups = target.querySelectorAll<HTMLElement>('.marquee-group');
+		if (!groups.length || !items.length) return;
+
+		const loopItems = items.length === 1 ? [...items, ...items] : items;
+
+		groups.forEach((group) => {
+			group.replaceChildren();
+			loopItems.forEach((item) => {
+				const card = buildCard(item);
+				if (card) group.append(card);
+			});
+		});
+
+		target.hidden = false;
+	};
+
+	if (marquee && template) {
+		void fetchCbt<TestimonialsPayload>('testimonials')
+			.then((response) => {
+				const items = response.data.slice(0, 9);
+				if (!items.length) return;
+
+				const columns = Array.from(
+					marquee.querySelectorAll<HTMLElement>('.marquee:not(.marquee--mobile)'),
+				);
+
+				columns.forEach((column, index) => {
+					const columnItems = items.filter((_, itemIndex) => itemIndex % columns.length === index);
+					if (!columnItems.length) {
+						column.hidden = true;
+						return;
+					}
+
+					fill(column, columnItems);
+				});
+
+				const mobile = marquee.querySelector<HTMLElement>('.marquee--mobile');
+				if (mobile) fill(mobile, items.slice(0, 4));
+			})
+			.catch(() => {
+				/* fallback statis tetap tampil */
+			});
+	}
+</script>
 
 <style>
 	.section {

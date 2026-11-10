@@ -48,4 +48,8 @@ The raw HTML/CSS/JS reference export is kept locally in `clone/` (gitignored) an
 
 ## Deploy
 
-The site is fully static. On Vercel, import this repository and keep the detected Astro settings: install `bun install`, build `bun run build`, output `dist`. Use Node.js `24.x` (or any version `>=22.22.0`). No environment variables are required.
+The site is fully static. On Vercel, import this repository and keep the detected Astro settings: install `bun install`, build `bun run build`, output `dist`. Use Node.js `24.x` (or any version `>=22.22.0`).
+
+By default the site reads from `https://cbt.ascendemy.id/api`. To point at another CBT environment, set `PUBLIC_CBT_API_URL` at build time, e.g. `PUBLIC_CBT_API_URL=http://localhost:8000/api`. During `bun dev` the fallback is already `http://localhost:8000/api`. Stats, testimonials, and blog posts come from the CBT API, with static content as fallback; make sure the landing origin is listed in the CBT app's `config/cors.php`.
+
+The public blog lives on the landing: `/blog` for the archive and `/blog/artikel?slug=...` for an article. CBT only supplies published news through the API and keeps its admin preview at `/preview-berita/{slug}`. Article detail is fetched client-side so new articles appear without a rebuild; clean `/blog/{slug}` URLs would need an SSR adapter.

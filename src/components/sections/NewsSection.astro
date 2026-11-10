@@ -23,12 +23,120 @@ import NewsListItem from './NewsListItem.astro';
 		<div class="news-grid">
 			<NewsFeaturedCard {...featuredNews} />
 
-			<div class="news-list reveal reveal-list">
+			<div class="news-list reveal reveal-list" data-news-list>
 				{newsItems.map((item) => <NewsListItem {...item} />)}
 			</div>
 		</div>
+
+		<template id="home-news-featured-template">
+			<NewsFeaturedCard {...featuredNews} />
+		</template>
+		<template id="home-news-list-template">
+			<NewsListItem {...newsItems[0]} />
+		</template>
 	</div>
 </section>
+
+<script>
+	import { articleUrl, fetchCbt, formatDate, type ApiResponse, type CbtNews } from '../../lib/cbt-api';
+
+	type NewsPayload = ApiResponse<CbtNews[]>;
+
+	const grid = document.querySelector<HTMLElement>('.news-grid');
+	const list = grid?.querySelector<HTMLElement>('[data-news-list]');
+	const featuredTemplate = document.querySelector<HTMLTemplateElement>('#home-news-featured-template');
+	const listTemplate = document.querySelector<HTMLTemplateElement>('#home-news-list-template');
+
+	const setImage = (card: HTMLElement, item: CbtNews) => {
+		const image = card.querySelector<HTMLImageElement>('img');
+		if (!image) return;
+
+		if (item.cover_image_url) {
+			image.removeAttribute('srcset');
+			image.removeAttribute('sizes');
+			image.src = item.cover_image_url;
+		}
+
+		image.alt = item.title;
+	};
+
+	const setMeta = (card: HTMLElement, item: CbtNews) => {
+		const meta = Array.from(card.querySelectorAll<HTMLElement>('.news-meta > span:not(.sep)'));
+		if (meta[0]) meta[0].textContent = formatDate(item.published_at);
+		if (meta[1]) meta[1].textContent = item.category;
+	};
+
+	const buildFeatured = (item: CbtNews) => {
+		if (!featuredTemplate) return null;
+
+		const card = featuredTemplate.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+		if (!card) return null;
+
+		card.setAttribute('href', articleUrl(item.slug));
+		setMeta(card, item);
+		setImage(card, item);
+
+		const title = card.querySelector('h3');
+		if (title) title.textContent = item.title;
+
+		const excerpt = card.querySelector('p');
+		if (excerpt) {
+			if (item.excerpt) excerpt.textContent = item.excerpt;
+			else excerpt.remove();
+		}
+
+		const pin = card.querySelector<HTMLElement>('.news-pin');
+		if (pin) pin.hidden = !item.is_pinned;
+
+		card.classList.add('is-visible');
+		return card;
+	};
+
+	const buildListItem = (item: CbtNews) => {
+		if (!listTemplate) return null;
+
+		const card = listTemplate.content.firstElementChild?.cloneNode(true) as HTMLElement | undefined;
+		if (!card) return null;
+
+		card.setAttribute('href', articleUrl(item.slug));
+		setMeta(card, item);
+		setImage(card, item);
+
+		const title = card.querySelector('h4');
+		if (title) title.textContent = item.title;
+
+		card.classList.add('is-visible');
+		return card;
+	};
+
+	if (grid && list) {
+		void fetchCbt<NewsPayload>('landing/news')
+			.then((response) => {
+				const items = response.data;
+				if (!items.length) return;
+
+				const featured = items.find((item) => item.is_pinned) ?? items[0];
+				const rest = items.filter((item) => item.id !== featured.id).slice(0, 3);
+				const featuredCard = grid.querySelector<HTMLElement>(':scope > a.news-featured');
+				const nextFeatured = buildFeatured(featured);
+
+				if (nextFeatured) {
+					if (featuredCard) featuredCard.replaceWith(nextFeatured);
+					else grid.prepend(nextFeatured);
+				}
+
+				list.replaceChildren();
+				rest.forEach((item) => {
+					const card = buildListItem(item);
+					if (card) list.append(card);
+				});
+				list.hidden = rest.length === 0;
+			})
+			.catch(() => {
+				/* fallback statis tetap tampil */
+			});
+	}
+</script>
 
 <style>
 	.section-head {

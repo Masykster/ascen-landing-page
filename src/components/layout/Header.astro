@@ -9,7 +9,9 @@ const pathname = Astro.url.pathname.replace(/\/+$/, '') || '/';
 const isHome = pathname === '/' || pathname === '/index.html';
 const resolveHref = (href: string) => (href.startsWith('#') && !isHome ? `/${href}` : href);
 const isActive = (href: string, index: number) =>
-	href.startsWith('/') ? pathname === href.replace(/\/+$/, '') : isHome && index === 0;
+	href.startsWith('/')
+		? pathname === href.replace(/\/+$/, '') || (href === '/blog' && pathname.startsWith('/blog/'))
+		: isHome && index === 0;
 ---
 
 <header class="site-header">

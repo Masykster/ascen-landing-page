@@ -1,5 +1,4 @@
 ---
-import Icon from '../ui/Icon.astro';
 import type { Testimonial } from '../../data/testimonials';
 
 interface Props {
@@ -15,24 +14,33 @@ const initials = testimonial.name
 	.join('')
 	.toUpperCase();
 
-const toneMap = {
-	Latihan: 'blue',
-	'Tryout TKA': 'orange',
-	'AMO 2026': 'green',
-} as const;
+const program = testimonial.program.toLowerCase();
+const tone =
+	program.includes('olimpiade') || program.includes('amo') || program.includes('kompetisi')
+		? 'green'
+		: program.includes('latihan')
+			? 'blue'
+			: 'orange';
 
-const tone = toneMap[testimonial.program];
-const gain = testimonial.after - testimonial.before;
+const score = testimonial.score !== null ? testimonial.score.toLocaleString('id-ID') : '—';
+const rating = Math.max(1, Math.min(5, testimonial.rating || 5));
 ---
 
 <article class="review">
 	<header class="review-head">
-		<span class:list={['review-avatar', `review-avatar--${tone}`]} aria-hidden="true">
-			{initials}
+		<span class:list={['review-avatar', tone !== 'orange' && `review-avatar--${tone}`]} aria-hidden="true">
+			<img
+				class="review-avatar-img"
+				src={testimonial.avatarUrl}
+				alt=""
+				loading="lazy"
+				hidden={!testimonial.avatarUrl}
+			/>
+			<span class="review-avatar-initials" hidden={Boolean(testimonial.avatarUrl)}>{initials}</span>
 		</span>
 		<div class="review-id">
 			<strong>{testimonial.name}</strong>
-			<span>{testimonial.school} · {testimonial.city}</span>
+			<span>{testimonial.school}</span>
 		</div>
 	</header>
 
@@ -40,12 +48,11 @@ const gain = testimonial.after - testimonial.before;
 
 	<footer class="review-result">
 		<span class="review-score">
-			<span class="review-before">{testimonial.before}</span>
-			<Icon name="arrow" size={12} />
-			<span class="review-after">{testimonial.after}</span>
+			<span class="review-after">{score}</span>
+			<span class="review-score-label">Skor CBT</span>
 		</span>
-		<span class="review-metric">{testimonial.metric}</span>
-		<span class="review-gain">+{gain}</span>
+		<span class="review-metric">{testimonial.program}</span>
+		<span class="review-gain">★ {rating}</span>
 	</footer>
 </article>
 
@@ -72,9 +79,11 @@ const gain = testimonial.after - testimonial.before;
 	}
 
 	.review-avatar {
+		position: relative;
 		width: 38px;
 		height: 38px;
 		flex: 0 0 auto;
+		overflow: hidden;
 		display: grid;
 		place-items: center;
 		border-radius: 50%;
@@ -94,6 +103,21 @@ const gain = testimonial.after - testimonial.before;
 	.review-avatar--green {
 		background: linear-gradient(140deg, #6cc47c, #2f8f45);
 		box-shadow: 0 10px 18px -12px rgba(47, 143, 69, 0.9);
+	}
+
+	.review-avatar-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.review-avatar-img[hidden],
+	.review-avatar-initials[hidden] {
+		display: none;
+	}
+
+	.review-avatar-initials {
+		line-height: 1;
 	}
 
 	.review-id {
@@ -134,35 +158,37 @@ const gain = testimonial.after - testimonial.before;
 
 	.review-score {
 		display: inline-flex;
-		align-items: center;
-		gap: 7px;
+		align-items: baseline;
+		gap: 5px;
 		font-family: var(--font-mono);
-		font-size: 13px;
-		font-weight: 700;
-		color: var(--ink);
-	}
-
-	.review-score :global(svg) {
-		width: 12px;
-		height: 12px;
-		color: #b9a893;
-	}
-
-	.review-before {
-		color: #b0b6c0;
 	}
 
 	.review-after {
+		font-size: 14px;
+		font-weight: 700;
 		color: #2f8f45;
 	}
 
-	.review-metric {
-		font-size: 10px;
+	.review-score-label {
+		font-size: 8.5px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
 		color: #9aa0ab;
 	}
 
+	.review-metric {
+		min-width: 0;
+		flex: 1;
+		overflow: hidden;
+		font-size: 10px;
+		color: #9aa0ab;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
 	.review-gain {
-		margin-left: auto;
+		flex: none;
 		padding: 3px 8px;
 		border-radius: 999px;
 		background: var(--green-soft);
