@@ -1,0 +1,206 @@
+---
+import type { QuizFigure } from '../../data/questions';
+
+interface Props {
+	name: QuizFigure;
+}
+
+const { name } = Astro.props;
+
+const labels: Record<QuizFigure, string> = {
+	'right-triangle':
+		'Segitiga siku-siku ABC dengan sudut siku-siku di B, sisi AB 8 cm, sisi BC 6 cm, dan sisi AC yang ditanyakan.',
+	'bar-chart':
+		'Diagram batang nilai ulangan: nilai 6 sebanyak 3 siswa, nilai 7 sebanyak 6 siswa, nilai 8 sebanyak 7 siswa, nilai 9 sebanyak 4 siswa.',
+};
+
+// --- diagram batang: skala sumbu Y 0–8, 14px per siswa ---
+const chart = { left: 40, right: 230, base: 128, unit: 14 };
+const slot = (chart.right - chart.left) / 4;
+const bars = [
+	{ label: '6', value: 3 },
+	{ label: '7', value: 6 },
+	{ label: '8', value: 7 },
+	{ label: '9', value: 4 },
+].map((bar, index) => {
+	const height = bar.value * chart.unit;
+	return {
+		...bar,
+		cx: chart.left + slot * index + slot / 2,
+		y: chart.base - height,
+		height,
+	};
+});
+const gridLines = [0, 2, 4, 6, 8].map((value) => ({ value, y: chart.base - value * chart.unit }));
+---
+
+<figure class="exam-fig" role="img" aria-label={labels[name]}>
+	{
+		name === 'right-triangle' && (
+			<svg viewBox="0 0 200 150" aria-hidden="true">
+				<polygon points="62,16 62,126 144.5,126" class="tri-fill" />
+				<line x1="62" y1="16" x2="62" y2="126" class="tri-edge" />
+				<line x1="62" y1="126" x2="144.5" y2="126" class="tri-edge" />
+				<line x1="62" y1="16" x2="144.5" y2="126" class="tri-edge tri-edge--ask" />
+				<path d="M62 113 H75 V126" class="tri-right" />
+
+				<text x="56" y="14" class="fig-point" text-anchor="end">A</text>
+				<text x="56" y="140" class="fig-point" text-anchor="end">B</text>
+				<text x="150" y="140" class="fig-point">C</text>
+
+				<text x="54" y="75" class="fig-measure" text-anchor="end">8 cm</text>
+				<text x="103" y="142" class="fig-measure" text-anchor="middle">6 cm</text>
+				<text x="112" y="66" class="fig-ask">?</text>
+			</svg>
+		)
+	}
+	{
+		name === 'bar-chart' && (
+			<svg viewBox="0 0 240 160" aria-hidden="true">
+				<defs>
+					<linearGradient id="exam-bar-grad" x1="0" y1="0" x2="0" y2="1">
+						<stop offset="0%" stop-color="#3b82f6" />
+						<stop offset="100%" stop-color="#93c5fd" />
+					</linearGradient>
+				</defs>
+
+				{gridLines.map((line) => (
+					<g>
+						<line
+							x1={chart.left}
+							y1={line.y}
+							x2={chart.right}
+							y2={line.y}
+							class:list={['bar-grid', line.value === 0 && 'bar-axis']}
+						/>
+						<text x={chart.left - 6} y={line.y + 3} class="fig-tick" text-anchor="end">
+							{line.value}
+						</text>
+					</g>
+				))}
+
+				{bars.map((bar) => (
+					<g>
+						<rect x={bar.cx - 13} y={bar.y} width="26" height={bar.height} rx="4" class="bar-rect" />
+						<text x={bar.cx} y={bar.y - 4} class="fig-value" text-anchor="middle">
+							{bar.value}
+						</text>
+						<text x={bar.cx} y={chart.base + 13} class="fig-tick" text-anchor="middle">
+							{bar.label}
+						</text>
+					</g>
+				))}
+
+				<text x={(chart.left + chart.right) / 2} y="156" class="fig-axis-title" text-anchor="middle">
+					Nilai
+				</text>
+				<text x="10" y="72" class="fig-axis-title" text-anchor="middle" transform="rotate(-90 10 72)">
+					Banyak siswa
+				</text>
+			</svg>
+		)
+	}
+</figure>
+
+<style>
+	.exam-fig {
+		margin: 0;
+		padding: 8px;
+		border: 1px solid #ece7df;
+		border-radius: 12px;
+		background: linear-gradient(180deg, #fbfdff 0%, #f7f9fc 100%);
+	}
+
+	.exam-fig svg {
+		display: block;
+		width: 100%;
+		height: auto;
+		max-height: 150px;
+		font-family: var(--font-body, inherit);
+	}
+
+	/* segitiga */
+	.tri-fill {
+		fill: rgba(37, 99, 235, 0.07);
+	}
+
+	.tri-edge {
+		stroke: #2a3140;
+		stroke-width: 2;
+		stroke-linecap: round;
+	}
+
+	.tri-edge--ask {
+		stroke: var(--orange);
+		stroke-dasharray: 5 4;
+	}
+
+	.tri-right {
+		fill: none;
+		stroke: #2a3140;
+		stroke-width: 1.4;
+	}
+
+	.fig-point {
+		font-size: 12px;
+		font-weight: 800;
+		fill: var(--ink);
+	}
+
+	.fig-measure {
+		font-size: 10.5px;
+		font-weight: 700;
+		fill: var(--blue);
+	}
+
+	.fig-ask {
+		font-size: 15px;
+		font-weight: 800;
+		fill: var(--orange-deep);
+	}
+
+	/* diagram batang */
+	.bar-grid {
+		stroke: #e4e8ef;
+		stroke-width: 1;
+		stroke-dasharray: 3 3;
+	}
+
+	.bar-axis {
+		stroke: #9aa3b2;
+		stroke-dasharray: none;
+	}
+
+	.bar-rect {
+		fill: url(#exam-bar-grad);
+	}
+
+	.fig-tick {
+		font-size: 9px;
+		font-weight: 600;
+		fill: #7f8593;
+	}
+
+	.fig-value {
+		font-size: 9.5px;
+		font-weight: 800;
+		fill: var(--blue);
+	}
+
+	.fig-axis-title {
+		font-size: 9px;
+		font-weight: 700;
+		fill: #4d535e;
+	}
+
+	@media (max-width: 640px) {
+		.exam-fig {
+			padding: 4px;
+			border-radius: 8px;
+		}
+
+		.exam-fig svg {
+			max-height: 74px;
+		}
+	}
+</style>

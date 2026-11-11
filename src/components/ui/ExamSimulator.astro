@@ -1,44 +1,73 @@
 ---
+import { Image } from 'astro:assets';
+import logo from '../../assets/images/logo.png';
 import { quizQuestions } from '../../data/questions';
 import CustomCursor from './CustomCursor.astro';
+import ExamFigure from './ExamFigure.astro';
 import Icon from './Icon.astro';
 
 const letters = ['A', 'B', 'C', 'D'];
 const total = quizQuestions.length;
+const first = quizQuestions[0];
 ---
 
-<div
-	class="sim"
-	data-sim
-	data-cursor-zone
-	data-cursor-ripple
-	data-questions={JSON.stringify(quizQuestions)}
->
-	<div class="sim-top">
-		<span class="sim-top-left">Tryout TKA<span class="sim-top-more"> · Matematika</span></span>
-		<span class="sim-clock"><Icon name="timer" size={15} /><span data-timer>09:42</span></span>
-		<span class="sim-top-right">
-			<span class="sim-live"></span>
-			<span class="sim-status-label">Ujian Berlangsung</span> · <span data-elapsed>00:00</span>
+<div class="sim" data-sim data-cursor-zone data-cursor-ripple>
+	<header class="sim-top">
+		<div class="sim-brand">
+			<Image src={logo} alt="Ascendemy" widths={[72, 144, 216]} sizes="72px" format="webp" class="sim-logo" />
+			<span class="sim-brand-text">
+				<strong>Tryout TKA SMP<span class="sim-top-more"> · Matematika</span></strong>
+				<code>PKT-TKA-SMP-MTK-07</code>
+			</span>
+		</div>
+
+		<span class="sim-clock">
+			<Icon name="timer" size={15} />
+			<span class="sim-clock-label">Sisa waktu</span>
+			<span data-timer>01:14:52</span>
 		</span>
-	</div>
+
+		<div class="sim-user">
+			<span class="sim-avatar" aria-hidden="true">RA</span>
+			<span class="sim-user-id">
+				<strong>Rafi Aditya</strong>
+				<small>26-0417-0731</small>
+			</span>
+			<button class="sim-finish" type="button" data-finish>
+				Selesai<span class="sim-finish-more"> Ujian</span>
+			</button>
+		</div>
+	</header>
 
 	<div class="sim-body">
 		<div class="sim-main">
 			<div class="sim-meta">
-				<div class="sim-meta-id">
-					<strong>REG - MATH - SMP - 7 - DAY 7</strong>
-					<span data-position>Soal 1 dari {total}</span>
+				<span class="sim-no">Soal No. <b data-number>1</b></span>
+				<span class="sim-topic" data-topic>{first.topic} · Pilihan Ganda</span>
+				<div class="sim-font" role="group" aria-label="Ukuran teks soal">
+					<button type="button" data-font="0.92" aria-pressed="false" aria-label="Perkecil teks">A-</button>
+					<button type="button" data-font="1" aria-pressed="true" aria-label="Ukuran teks normal">A</button>
+					<button type="button" data-font="1.1" aria-pressed="false" aria-label="Perbesar teks">A+</button>
 				</div>
-				<span class="sim-type">Pilihan Ganda</span>
 			</div>
 
-			<div class="sim-questions">
+			<div class="sim-questions" data-questions>
 				{
 					quizQuestions.map((question, questionIndex) => (
-						<div class="sim-question" data-question={questionIndex} hidden={questionIndex !== 0}>
-							<p class="sim-label">{question.label}</p>
-							{question.formula && <p class="sim-formula">{question.formula}</p>}
+						<div
+							class:list={['sim-question', question.figure && 'has-figure']}
+							data-question={questionIndex}
+							data-topic={question.topic}
+							data-answer={question.answer}
+							hidden={questionIndex !== 0}
+						>
+							<div class="sim-prompt">
+								<div class="sim-prompt-text">
+									<p class="sim-stem" set:html={question.stem} />
+									{question.formula && <p class="sim-formula" set:html={question.formula} />}
+								</div>
+								{question.figure && <ExamFigure name={question.figure} />}
+							</div>
 							<div class="sim-options">
 								{question.options.map((option, optionIndex) => (
 									<button
@@ -49,7 +78,7 @@ const total = quizQuestions.length;
 										aria-pressed="false"
 									>
 										<span class="sim-key">{letters[optionIndex]}</span>
-										<span class="sim-value">{option}</span>
+										<span class="sim-value" set:html={option} />
 										<span class="sim-check">
 											<Icon name="check" size={12} />
 										</span>
@@ -111,6 +140,15 @@ const total = quizQuestions.length;
 		</aside>
 	</div>
 
+	<div class="sim-toast" data-toast role="status" hidden>
+		<span>Ini simulasi demo.</span>
+		<a href="https://cbt.ascendemy.id/register">Daftar gratis untuk tryout lengkap →</a>
+	</div>
+
+	<span class="sim-ghost" data-ghost aria-hidden="true">
+		<img src="/cursor-alt-pointer-mouse.svg" width="20" height="20" alt="" />
+	</span>
+
 	<CustomCursor ripple />
 </div>
 
@@ -118,32 +156,38 @@ const total = quizQuestions.length;
 	const root = document.querySelector<HTMLElement>('[data-sim]');
 
 	if (root) {
-		const questions = JSON.parse(root.dataset.questions ?? '[]') as {
-			label: string;
-			formula?: string;
-			options: string[];
-		}[];
-		const total = questions.length;
+		const questionBlocks = Array.from(root.querySelectorAll<HTMLElement>('[data-question]'));
+		const total = questionBlocks.length;
 
-		const positionEl = root.querySelector<HTMLElement>('[data-position]');
+		const numberEl = root.querySelector<HTMLElement>('[data-number]');
+		const topicEl = root.querySelector<HTMLElement>('[data-topic]');
+		const questionsEl = root.querySelector<HTMLElement>('[data-questions]');
 		const answeredEl = root.querySelector<HTMLElement>('[data-answered]');
 		const percentEl = root.querySelector<HTMLElement>('[data-percent]');
 		const sideBarEl = root.querySelector<HTMLElement>('[data-side-bar]');
 		const prevEl = root.querySelector<HTMLButtonElement>('[data-prev]');
 		const nextEl = root.querySelector<HTMLButtonElement>('[data-next]');
 		const flagEl = root.querySelector<HTMLButtonElement>('[data-flag]');
-		const questionBlocks = Array.from(root.querySelectorAll<HTMLElement>('[data-question]'));
+		const finishEl = root.querySelector<HTMLButtonElement>('[data-finish]');
+		const toastEl = root.querySelector<HTMLElement>('[data-toast]');
+		const ghostEl = root.querySelector<HTMLElement>('[data-ghost]');
 		const optionButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-option]'));
 		const tiles = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-tile]'));
+		const fontButtons = Array.from(root.querySelectorAll<HTMLButtonElement>('[data-font]'));
 
 		const answers = new Array<number>(total).fill(-1);
 		const flagged = new Array<boolean>(total).fill(false);
 		let current = 0;
+		let shown = 0;
 
 		function render() {
 			questionBlocks.forEach((block, index) => {
 				block.hidden = index !== current;
 			});
+
+			// soal baru dibuka → gulir area soal kembali ke atas
+			if (shown !== current && questionsEl) questionsEl.scrollTop = 0;
+			shown = current;
 
 			optionButtons.forEach((button) => {
 				const questionIndex = Number(button.dataset.q);
@@ -162,7 +206,8 @@ const total = quizQuestions.length;
 			const answered = answers.filter((answer) => answer !== -1).length;
 			const percent = Math.round((answered / total) * 100);
 
-			if (positionEl) positionEl.textContent = `Soal ${current + 1} dari ${total}`;
+			if (numberEl) numberEl.textContent = String(current + 1);
+			if (topicEl) topicEl.textContent = `${questionBlocks[current].dataset.topic} · Pilihan Ganda`;
 			if (answeredEl) answeredEl.textContent = String(answered);
 			if (percentEl) percentEl.textContent = `${percent}%`;
 			if (sideBarEl) sideBarEl.style.width = `${percent}%`;
@@ -208,29 +253,42 @@ const total = quizQuestions.length;
 			render();
 		});
 
+		// Ukuran teks soal (A- / A / A+)
+		fontButtons.forEach((button) => {
+			button.addEventListener('click', () => {
+				questionsEl?.style.setProperty('--q-scale', button.dataset.font ?? '1');
+				fontButtons.forEach((other) =>
+					other.setAttribute('aria-pressed', other === button ? 'true' : 'false'),
+				);
+			});
+		});
+
+		// "Selesai Ujian" → toast CTA (simulator ini hanya demo)
+		let toastTimer = 0;
+		finishEl?.addEventListener('click', () => {
+			if (!toastEl) return;
+			toastEl.hidden = false;
+			window.clearTimeout(toastTimer);
+			toastTimer = window.setTimeout(() => {
+				toastEl.hidden = true;
+			}, 5000);
+		});
+
 		render();
 
-		// Timer mundur + durasi berjalan
+		// Timer mundur (hh:mm:ss)
 		const timerEl = root.querySelector<HTMLElement>('[data-timer]');
-		const elapsedEl = root.querySelector<HTMLElement>('[data-elapsed]');
-		let remaining = 9 * 60 + 42;
-		let elapsed = 0;
+		let remaining = 1 * 3600 + 14 * 60 + 52;
 		let timerId: number | null = null;
+
+		const pad = (value: number) => String(value).padStart(2, '0');
 
 		function tick() {
 			remaining = Math.max(0, remaining - 1);
-			elapsed += 1;
-
 			if (timerEl) {
-				const minutes = String(Math.floor(remaining / 60)).padStart(2, '0');
-				const seconds = String(remaining % 60).padStart(2, '0');
-				timerEl.textContent = `${minutes}:${seconds}`;
-			}
-
-			if (elapsedEl) {
-				const minutes = String(Math.floor(elapsed / 60)).padStart(2, '0');
-				const seconds = String(elapsed % 60).padStart(2, '0');
-				elapsedEl.textContent = `${minutes}:${seconds}`;
+				const hours = Math.floor(remaining / 3600);
+				const minutes = Math.floor((remaining % 3600) / 60);
+				timerEl.textContent = `${pad(hours)}:${pad(minutes)}:${pad(remaining % 60)}`;
 			}
 		}
 
@@ -246,6 +304,211 @@ const total = quizQuestions.length;
 			});
 		}
 
+		// --- Mode demo: kursor "siswa demo" mengerjakan soal saat pengunjung diam ---
+		const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+		if (ghostEl && !reduceMotion) {
+			const ghost = ghostEl;
+			const STOP = Symbol('demo-stop');
+
+			let session = 0;
+			let running = false;
+			let visible = false;
+			let pointerInside = false;
+			let placed = false;
+			let startTimer = 0;
+			let ghostX = 0;
+			let ghostY = 0;
+
+			const rand = (min: number, max: number) => min + Math.random() * (max - min);
+			const isShown = (el: HTMLElement) => el.offsetParent !== null;
+
+			const sleep = (ms: number, s: number) =>
+				new Promise<void>((resolve, reject) => {
+					window.setTimeout(() => (s === session ? resolve() : reject(STOP)), ms);
+				});
+
+			const placeGhost = (x: number, y: number, duration: number) => {
+				ghost.style.transitionDuration = `${duration}ms, 250ms`;
+				ghost.style.transform = `translate3d(${x - 3}px, ${y - 2}px, 0)`;
+				ghostX = x;
+				ghostY = y;
+			};
+
+			async function moveTo(el: HTMLElement, s: number, linger = 0) {
+				const box = root!.getBoundingClientRect();
+				const rect = el.getBoundingClientRect();
+				const x = rect.left - box.left + rect.width * rand(0.3, 0.62);
+				const y = rect.top - box.top + rect.height * rand(0.38, 0.66);
+				const duration = Math.round(Math.min(950, 360 + Math.hypot(x - ghostX, y - ghostY) * 0.9));
+				placeGhost(x, y, duration);
+				await sleep(duration + 90 + linger, s);
+			}
+
+			async function clickEl(el: HTMLElement, s: number) {
+				await moveTo(el, s);
+				ghost.classList.add('is-pressing');
+
+				const ripple = document.createElement('span');
+				ripple.className = 'cursor-ripple';
+				ripple.style.left = `${ghostX}px`;
+				ripple.style.top = `${ghostY}px`;
+				root!.appendChild(ripple);
+				window.setTimeout(() => ripple.remove(), 620);
+
+				await sleep(130, s);
+				ghost.classList.remove('is-pressing');
+				el.click();
+				await sleep(240, s);
+			}
+
+			/** buka soal tertentu lewat tile navigasi, atau tombol prev/next jika panel tersembunyi (mobile) */
+			async function goToQuestion(index: number, s: number) {
+				const tile = tiles[index];
+				if (tile && isShown(tile)) {
+					await clickEl(tile, s);
+					return;
+				}
+				while (current !== index) {
+					const step = current < index ? nextEl : prevEl;
+					if (!step) return;
+					await clickEl(step, s);
+					await sleep(260, s);
+				}
+			}
+
+			function resetState() {
+				answers.fill(-1);
+				flagged.fill(false);
+				current = 0;
+				render();
+			}
+
+			async function runDemo(s: number) {
+				while (true) {
+					// semua terjawab → periksa ulang soal ragu-ragu, lalu ulangi dari awal
+					if (answers.every((answer) => answer !== -1)) {
+						const doubtful = flagged.findIndex(Boolean);
+						if (doubtful !== -1) {
+							await sleep(700, s);
+							await goToQuestion(doubtful, s);
+							await sleep(1200, s);
+							if (flagEl) await clickEl(flagEl, s);
+							await sleep(1800, s);
+							continue;
+						}
+						await sleep(2600, s);
+						resetState();
+						await sleep(900, s);
+						continue;
+					}
+
+					const target = answers.findIndex((answer) => answer === -1);
+					if (target !== current) {
+						await goToQuestion(target, s);
+						await sleep(400, s);
+					}
+
+					const block = questionBlocks[current];
+					const options = Array.from(block.querySelectorAll<HTMLButtonElement>('[data-option]'));
+					const correct = Number(block.dataset.answer);
+
+					// waktu "membaca" menyesuaikan panjang soal
+					const textLength = block.querySelector('.sim-prompt')?.textContent?.trim().length ?? 40;
+					await sleep(Math.min(2400, 900 + textLength * 9), s);
+
+					// ±80% benar, sisanya keliru — seperti siswa sungguhan
+					let choice = correct;
+					if (Math.random() > 0.8) {
+						const wrong = options.map((_, i) => i).filter((i) => i !== correct);
+						choice = wrong[Math.floor(Math.random() * wrong.length)];
+					}
+
+					// kadang menimbang opsi lain dulu
+					if (Math.random() < 0.3) {
+						const others = options.filter((_, i) => i !== choice);
+						await moveTo(others[Math.floor(Math.random() * others.length)], s, 420);
+					}
+
+					await clickEl(options[choice], s);
+
+					// soal bergambar pertama ditandai ragu-ragu untuk diperiksa ulang nanti
+					if (current === 2 && !flagged[2] && flagEl) {
+						await sleep(380, s);
+						await clickEl(flagEl, s);
+					}
+
+					await sleep(520, s);
+					if (current < total - 1 && nextEl) await clickEl(nextEl, s);
+				}
+			}
+
+			function begin() {
+				if (running || !visible || document.hidden || pointerInside) return;
+				running = true;
+				const s = ++session;
+
+				if (!placed) {
+					// mulai dari area kosong kanan-bawah kolom soal
+					const box = root!.getBoundingClientRect();
+					placeGhost(box.width * 0.55, box.height * 0.82, 0);
+					placed = true;
+				}
+
+				ghost.classList.add('is-visible');
+				runDemo(s).catch((error) => {
+					if (error !== STOP) console.error(error);
+				});
+			}
+
+			function halt() {
+				window.clearTimeout(startTimer);
+				if (!running) return;
+				running = false;
+				session += 1;
+				ghost.classList.remove('is-visible', 'is-pressing');
+			}
+
+			const scheduleStart = (delay: number) => {
+				window.clearTimeout(startTimer);
+				startTimer = window.setTimeout(begin, delay);
+			};
+
+			// pengunjung mengambil alih → demo berhenti, state dipertahankan
+			const takeOver = (event: Event, resumeAfter: number) => {
+				if (!event.isTrusted) return;
+				halt();
+				scheduleStart(resumeAfter);
+			};
+
+			root.addEventListener('pointermove', (event) => {
+				if (!event.isTrusted || event.pointerType !== 'mouse') return;
+				pointerInside = true;
+				halt();
+			});
+			root.addEventListener('pointerleave', (event) => {
+				if (event.pointerType !== 'mouse') return;
+				pointerInside = false;
+				scheduleStart(6000);
+			});
+			root.addEventListener('pointerdown', (event) => takeOver(event, 8000));
+			root.addEventListener('touchstart', (event) => takeOver(event, 8000), { passive: true });
+			root.addEventListener('keydown', (event) => takeOver(event, 6000));
+
+			new IntersectionObserver(
+				([entry]) => {
+					visible = entry.isIntersecting;
+					if (visible) scheduleStart(1800);
+					else halt();
+				},
+				{ threshold: 0.35 },
+			).observe(root);
+
+			document.addEventListener('visibilitychange', () => {
+				if (document.hidden) halt();
+				else scheduleStart(1800);
+			});
+		}
 	}
 </script>
 
@@ -260,23 +523,55 @@ const total = quizQuestions.length;
 			linear-gradient(180deg, #ffffff 0%, #fbfaf8 100%);
 	}
 
-	/* --- top bar ----------------------------------------------------------- */
+	/* --- header aplikasi ---------------------------------------------------- */
 
 	.sim-top {
 		display: grid;
 		grid-template-columns: 1fr auto 1fr;
 		align-items: center;
 		gap: 16px;
-		padding: 0 20px;
-		height: 46px;
+		padding: 0 18px;
+		height: 54px;
 		border-bottom: 1px solid #ece7df;
-		background: rgba(255, 255, 255, 0.72);
+		background: rgba(255, 255, 255, 0.86);
 	}
 
-	.sim-top-left {
+	.sim-brand {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		min-width: 0;
+	}
+
+	.sim-brand :global(.sim-logo) {
+		width: 72px;
+		height: auto;
+		flex: 0 0 auto;
+	}
+
+	.sim-brand-text {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+		padding-left: 10px;
+		border-left: 1px solid #ece7df;
+	}
+
+	.sim-brand-text strong {
 		font-size: 12px;
 		font-weight: 700;
 		color: var(--ink);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.sim-brand-text code {
+		font-family: var(--font-mono);
+		font-size: 9.5px;
+		letter-spacing: 0.04em;
+		color: #8a8f99;
 	}
 
 	.sim-clock {
@@ -291,42 +586,83 @@ const total = quizQuestions.length;
 		font-family: var(--font-mono);
 		font-size: 15px;
 		font-weight: 700;
+		box-shadow: 0 8px 18px -16px rgba(35, 39, 46, 0.6);
 	}
 
 	.sim-clock :global(svg) {
 		width: 15px;
 		height: 15px;
+		color: var(--blue);
+	}
+
+	.sim-clock-label {
+		font-family: var(--font-body, inherit);
+		font-size: 10px;
+		font-weight: 600;
+		letter-spacing: 0;
 		color: #8a8f99;
 	}
 
-	.sim-top-right {
+	.sim-user {
 		display: inline-flex;
 		align-items: center;
-		gap: 7px;
+		gap: 9px;
 		justify-self: end;
-		font-size: 11px;
-		font-weight: 600;
-		color: #7f8593;
+		min-width: 0;
 	}
 
-	.sim-live {
-		width: 7px;
-		height: 7px;
+	.sim-avatar {
+		width: 28px;
+		height: 28px;
+		flex: 0 0 auto;
+		display: grid;
+		place-items: center;
 		border-radius: 50%;
-		background: #46a758;
-		box-shadow: 0 0 0 4px rgba(70, 167, 88, 0.16);
-		animation: sim-pulse 2.2s ease-in-out infinite;
+		background: linear-gradient(135deg, var(--blue) 0%, #60a5fa 100%);
+		color: #fff;
+		font-size: 10.5px;
+		font-weight: 800;
+		letter-spacing: 0.02em;
 	}
 
-	@keyframes sim-pulse {
-		0%,
-		100% {
-			box-shadow: 0 0 0 0 rgba(70, 167, 88, 0.35);
-		}
+	.sim-user-id {
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		line-height: 1.15;
+	}
 
-		50% {
-			box-shadow: 0 0 0 6px rgba(70, 167, 88, 0);
-		}
+	.sim-user-id strong {
+		font-size: 11.5px;
+		font-weight: 700;
+		color: var(--ink);
+		white-space: nowrap;
+	}
+
+	.sim-user-id small {
+		font-family: var(--font-mono);
+		font-size: 9.5px;
+		color: #8a8f99;
+	}
+
+	.sim-finish {
+		margin-left: 4px;
+		padding: 7px 12px;
+		border: 1px solid #f8c9a8;
+		border-radius: 999px;
+		background: #fff5ee;
+		color: var(--orange-deep);
+		font-family: inherit;
+		font-size: 11.5px;
+		font-weight: 700;
+		white-space: nowrap;
+		transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+	}
+
+	.sim-finish:hover {
+		background: var(--orange);
+		border-color: var(--orange);
+		color: #fff;
 	}
 
 	/* --- body -------------------------------------------------------------- */
@@ -335,7 +671,7 @@ const total = quizQuestions.length;
 		flex: 1;
 		display: flex;
 		gap: 18px;
-		padding: 18px 20px 20px;
+		padding: 16px 20px 20px;
 		min-height: 0;
 	}
 
@@ -344,42 +680,101 @@ const total = quizQuestions.length;
 		min-width: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 14px;
-	}
-
-	.sim-meta {
-		display: flex;
-		align-items: flex-end;
-		justify-content: space-between;
 		gap: 12px;
 	}
 
-	.sim-meta-id strong {
-		display: block;
+	/* --- baris info soal --------------------------------------------------- */
+
+	.sim-meta {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding-bottom: 10px;
+		border-bottom: 1px dashed #ece7df;
+	}
+
+	.sim-no {
+		flex: 0 0 auto;
+		padding: 5px 11px;
+		border-radius: 8px;
+		background: var(--blue);
+		color: #fff;
+		font-size: 11.5px;
+		font-weight: 700;
+		box-shadow: 0 8px 16px -12px rgba(37, 99, 235, 0.9);
+	}
+
+	.sim-no b {
 		font-family: var(--font-mono);
-		font-size: 12px;
-		font-weight: 700;
-		letter-spacing: 0.06em;
-		color: var(--ink);
 	}
 
-	.sim-meta-id span {
-		display: block;
-		margin-top: 3px;
-		font-size: 12px;
+	.sim-topic {
+		flex: 1;
+		min-width: 0;
+		font-size: 11.5px;
+		font-weight: 600;
 		color: var(--muted);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	.sim-type {
-		font-size: 12px;
+	.sim-font {
+		flex: 0 0 auto;
+		display: inline-flex;
+		align-items: center;
+		gap: 2px;
+		padding: 2px;
+		border: 1px solid #ece7df;
+		border-radius: 999px;
+		background: #fff;
+	}
+
+	.sim-font button {
+		min-width: 26px;
+		height: 22px;
+		padding: 0 6px;
+		border: 0;
+		border-radius: 999px;
+		background: transparent;
+		color: #8a8f99;
+		font-family: inherit;
 		font-weight: 700;
+		line-height: 1;
+		transition: background 0.2s ease, color 0.2s ease;
+	}
+
+	.sim-font button:nth-child(1) {
+		font-size: 10px;
+	}
+
+	.sim-font button:nth-child(2) {
+		font-size: 11.5px;
+	}
+
+	.sim-font button:nth-child(3) {
+		font-size: 13px;
+	}
+
+	.sim-font button:hover {
 		color: var(--blue);
 	}
 
+	.sim-font button[aria-pressed='true'] {
+		background: #eef4ff;
+		color: var(--blue);
+	}
+
+	/* --- soal -------------------------------------------------------------- */
+
 	.sim-questions {
+		--q-scale: 1;
 		flex: 1;
 		min-height: 0;
 		display: flex;
+		overflow-y: auto;
+		scrollbar-width: thin;
+		scrollbar-color: #d7dae0 transparent;
 	}
 
 	.sim-question {
@@ -387,35 +782,89 @@ const total = quizQuestions.length;
 		min-height: 0;
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 12px;
 	}
 
 	.sim-question[hidden] {
 		display: none;
 	}
 
-	.sim-label {
+	.sim-prompt-text {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.sim-stem {
 		margin: 0;
-		font-size: 15px;
+		font-size: calc(15px * var(--q-scale));
+		line-height: 1.6;
 		color: var(--text);
 	}
 
 	.sim-formula {
 		margin: 0;
 		font-family: var(--font-mono);
-		font-size: 21px;
+		font-size: calc(21px * var(--q-scale));
 		font-weight: 700;
 		letter-spacing: -0.01em;
 		color: var(--ink);
+	}
+
+	/* notasi matematika (konten dari set:html → butuh :global) */
+	.sim-questions :global(sup) {
+		font-size: 0.62em;
+		line-height: 0;
+		vertical-align: 0.7em;
+	}
+
+	.sim-questions :global(i) {
+		font-family: Georgia, 'Times New Roman', serif;
+		font-style: italic;
+		font-weight: 600;
+	}
+
+	.sim-questions :global(.mf) {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: stretch;
+		margin: 0 0.12em 0 0.04em;
+		font-size: 0.74em;
+		line-height: 1.08;
+		text-align: center;
+		vertical-align: middle;
+	}
+
+	.sim-questions :global(.mf > span:first-child) {
+		padding: 0 0.18em 1px;
+		border-bottom: 1.5px solid currentColor;
+	}
+
+	.sim-questions :global(.mf > span:last-child) {
+		padding: 1px 0.18em 0;
+	}
+
+	/* soal bergambar: teks kiri, gambar kanan; opsi 2 × 2 */
+	.has-figure .sim-prompt {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) 208px;
+		align-items: center;
+		gap: 16px;
 	}
 
 	.sim-options {
 		flex: 1;
 		min-height: 0;
 		display: grid;
-		grid-template-rows: repeat(4, minmax(0, 62px));
+		grid-template-rows: repeat(4, minmax(0, 60px));
 		align-content: space-evenly;
 		gap: 10px;
+	}
+
+	.has-figure .sim-options {
+		grid-template-columns: 1fr 1fr;
+		grid-template-rows: repeat(2, minmax(0, 56px));
+		align-content: center;
 	}
 
 	.sim-option {
@@ -469,7 +918,7 @@ const total = quizQuestions.length;
 
 	.sim-value {
 		flex: 1;
-		font-size: 15px;
+		font-size: calc(15px * var(--q-scale));
 		font-weight: 600;
 		color: var(--ink);
 	}
@@ -530,6 +979,15 @@ const total = quizQuestions.length;
 	.sim-action :global(svg) {
 		width: 14px;
 		height: 14px;
+	}
+
+	.sim-action--prev:not(:disabled) {
+		border-color: #e3e6eb;
+		background: #fff;
+	}
+
+	.sim-action--prev:not(:disabled):hover {
+		background: #f4f5f7;
 	}
 
 	.sim-action--prev:disabled {
@@ -711,60 +1169,190 @@ const total = quizQuestions.length;
 		box-shadow: 0 10px 18px -12px rgba(37, 99, 235, 0.95);
 	}
 
+	/* --- toast "Selesai Ujian" --------------------------------------------- */
+
+	.sim-toast {
+		position: absolute;
+		left: 50%;
+		top: 66px;
+		z-index: 8;
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		max-width: calc(100% - 32px);
+		padding: 10px 16px;
+		border-radius: 12px;
+		background: var(--ink);
+		color: #e8eaee;
+		font-size: 12px;
+		font-weight: 600;
+		white-space: nowrap;
+		box-shadow: 0 18px 36px -18px rgba(35, 39, 46, 0.75);
+		translate: -50% 0;
+		animation: sim-toast-in 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+	}
+
+	.sim-toast[hidden] {
+		display: none;
+	}
+
+	.sim-toast a {
+		color: #fdba74;
+		font-weight: 800;
+		text-decoration: none;
+	}
+
+	.sim-toast a:hover {
+		text-decoration: underline;
+	}
+
+	@keyframes sim-toast-in {
+		from {
+			opacity: 0;
+			translate: -50% -8px;
+		}
+
+		to {
+			opacity: 1;
+			translate: -50% 0;
+		}
+	}
+
+	/* --- kursor demo ------------------------------------------------------- */
+
+	.sim-ghost {
+		position: absolute;
+		top: 0;
+		left: 0;
+		z-index: 6;
+		pointer-events: none;
+		opacity: 0;
+		transform: translate3d(-40px, -40px, 0);
+		transition-property: transform, opacity;
+		transition-duration: 600ms, 250ms;
+		transition-timing-function: cubic-bezier(0.45, 0.05, 0.25, 1), ease;
+		filter: drop-shadow(0 4px 7px rgba(35, 39, 46, 0.32));
+	}
+
+	.sim-ghost.is-visible {
+		opacity: 1;
+	}
+
+	.sim-ghost img {
+		display: block;
+		width: 20px;
+		height: 20px;
+		transition: scale 0.12s ease;
+	}
+
+	.sim-ghost.is-pressing img {
+		scale: 0.8;
+	}
+
+	/* --- responsif --------------------------------------------------------- */
+
 	@media (max-width: 900px) {
 		.sim-side {
+			display: none;
+		}
+
+		.sim-top-more,
+		.sim-clock-label {
 			display: none;
 		}
 	}
 
 	@media (max-width: 640px) {
 		.sim-top {
-			height: 36px;
-			padding: 0 12px;
+			height: 38px;
+			padding: 0 10px;
 			gap: 8px;
 		}
 
-		.sim-top-left {
-			font-size: 10px;
+		.sim-brand {
+			gap: 6px;
 		}
 
-		.sim-top-more,
-		.sim-status-label {
+		.sim-brand :global(.sim-logo) {
+			width: 46px;
+		}
+
+		.sim-brand-text {
+			padding-left: 6px;
+		}
+
+		.sim-brand-text strong {
+			font-size: 9.5px;
+		}
+
+		.sim-brand-text code,
+		.sim-user-id,
+		.sim-finish-more {
 			display: none;
 		}
 
 		.sim-clock {
-			padding: 3px 9px;
-			font-size: 12px;
+			gap: 5px;
+			padding: 3px 8px;
+			font-size: 11px;
 		}
 
 		.sim-clock :global(svg) {
-			width: 12px;
-			height: 12px;
+			width: 11px;
+			height: 11px;
 		}
 
-		.sim-top-right {
+		.sim-avatar {
+			width: 20px;
+			height: 20px;
+			font-size: 8px;
+		}
+
+		.sim-finish {
+			margin-left: 0;
+			padding: 4px 8px;
 			font-size: 9px;
 		}
 
 		.sim-body {
-			padding: 12px 14px 14px;
+			padding: 10px 12px 12px;
 			gap: 10px;
 		}
 
 		.sim-main {
-			gap: 8px;
+			gap: 7px;
 		}
 
-		.sim-meta-id strong {
+		.sim-meta {
+			gap: 6px;
+			padding-bottom: 6px;
+		}
+
+		.sim-no {
+			padding: 3px 7px;
+			border-radius: 6px;
 			font-size: 9px;
 		}
 
-		.sim-meta-id span {
-			font-size: 10px;
+		.sim-topic {
+			font-size: 9px;
 		}
 
-		.sim-type {
+		.sim-font button {
+			min-width: 18px;
+			height: 16px;
+			padding: 0 3px;
+		}
+
+		.sim-font button:nth-child(1) {
+			font-size: 8px;
+		}
+
+		.sim-font button:nth-child(2) {
+			font-size: 9px;
+		}
+
+		.sim-font button:nth-child(3) {
 			font-size: 10px;
 		}
 
@@ -772,15 +1360,26 @@ const total = quizQuestions.length;
 			gap: 6px;
 		}
 
-		.sim-label {
-			font-size: 11px;
+		.sim-prompt-text {
+			gap: 3px;
+		}
+
+		.sim-stem {
+			font-size: calc(10.5px * var(--q-scale));
+			line-height: 1.45;
 		}
 
 		.sim-formula {
-			font-size: 15px;
+			font-size: calc(14px * var(--q-scale));
 		}
 
-		.sim-options {
+		.has-figure .sim-prompt {
+			grid-template-columns: minmax(0, 1fr) 96px;
+			gap: 8px;
+		}
+
+		.sim-options,
+		.has-figure .sim-options {
 			grid-template-rows: none;
 			grid-template-columns: 1fr 1fr;
 			gap: 6px;
@@ -799,7 +1398,7 @@ const total = quizQuestions.length;
 		}
 
 		.sim-value {
-			font-size: 10.5px;
+			font-size: calc(10.5px * var(--q-scale));
 		}
 
 		.sim-check {
@@ -826,6 +1425,16 @@ const total = quizQuestions.length;
 		.sim-action :global(svg) {
 			width: 11px;
 			height: 11px;
+		}
+
+		.sim-toast {
+			top: 46px;
+			padding: 7px 10px;
+			font-size: 9.5px;
+			white-space: normal;
+			flex-wrap: wrap;
+			justify-content: center;
+			text-align: center;
 		}
 	}
 </style>
