@@ -4,13 +4,17 @@ import ExamSimulator from '../ui/ExamSimulator.astro';
 import MathScramble from '../ui/MathScramble.astro';
 ---
 
-<section class="hero" id="beranda">
+<section class="hero" id="beranda" data-pause-offscreen>
 	<div class="hero-aurora" aria-hidden="true">
 		<span class="aurora aurora--1"></span>
 		<span class="aurora aurora--2"></span>
 		<span class="aurora aurora--3"></span>
 	</div>
-	<div class="hero-snow" aria-hidden="true"></div>
+	<div class="hero-snow" aria-hidden="true">
+		<span class="snow-layer snow-layer--1"></span>
+		<span class="snow-layer snow-layer--2"></span>
+		<span class="snow-layer snow-layer--3"></span>
+	</div>
 	<!-- area tengah (judul + jendela simulator) dikosongkan agar konten tetap terbaca -->
 	<MathScramble count={28} blueRatio={0.65} seed={7} safe={{ x1: 17, x2: 83, y1: 9, y2: 100 }} />
 	<div class="container">
@@ -35,7 +39,7 @@ import MathScramble from '../ui/MathScramble.astro';
 			<div class="hero-window">
 				<div class="window-bar">
 					<div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
-					<span class="window-url">cbt.ascendemy.id</span>
+					<span class="window-url">cbt.ascendemy.id/ujian/tka-smp-matematika</span>
 					<span class="window-live">Online</span>
 				</div>
 
@@ -163,35 +167,63 @@ import MathScramble from '../ui/MathScramble.astro';
 	.hero-snow {
 		position: absolute;
 		inset: 0;
+		overflow: hidden;
 		pointer-events: none;
-		background-image:
-			radial-gradient(
-				circle 4px at 50% 50%,
-				rgba(255, 255, 255, 1) 0%,
-				rgba(255, 255, 255, 0) 70%
-			),
-			radial-gradient(
-				circle 3px at 50% 50%,
-				rgba(168, 207, 255, 1) 0%,
-				rgba(168, 207, 255, 0) 70%
-			),
-			radial-gradient(
-				circle 2.5px at 50% 50%,
-				rgba(255, 255, 255, 0.95) 0%,
-				rgba(255, 255, 255, 0) 70%
-			);
-		background-size: 96px 150px, 148px 220px, 84px 126px;
-		background-position: 18px 0, 60px 0, 6px 0;
-		animation: snow-fall 12s linear infinite;
 		mask-image: linear-gradient(180deg, transparent 0%, #000 10%, #000 62%, transparent 96%);
 		-webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 10%, #000 62%, transparent 96%);
-		will-change: background-position;
+	}
+
+	.snow-layer {
+		position: absolute;
+		top: calc(-1 * var(--snow-tile));
+		right: 0;
+		bottom: 0;
+		left: 0;
+		display: block;
+		background-repeat: repeat;
+		background-size: var(--snow-size);
+		background-position: var(--snow-x) 0;
+		animation: snow-fall 12s linear infinite;
+		will-change: transform;
+	}
+
+	.snow-layer--1 {
+		--snow-tile: 150px;
+		--snow-size: 96px 150px;
+		--snow-x: 18px;
+		background-image: radial-gradient(
+			circle 4px at 50% 50%,
+			rgba(255, 255, 255, 1) 0%,
+			rgba(255, 255, 255, 0) 70%
+		);
+	}
+
+	.snow-layer--2 {
+		--snow-tile: 220px;
+		--snow-size: 148px 220px;
+		--snow-x: 60px;
+		background-image: radial-gradient(
+			circle 3px at 50% 50%,
+			rgba(168, 207, 255, 1) 0%,
+			rgba(168, 207, 255, 0) 70%
+		);
+	}
+
+	.snow-layer--3 {
+		--snow-tile: 126px;
+		--snow-size: 84px 126px;
+		--snow-x: 6px;
+		background-image: radial-gradient(
+			circle 2.5px at 50% 50%,
+			rgba(255, 255, 255, 0.95) 0%,
+			rgba(255, 255, 255, 0) 70%
+		);
 	}
 
 	@keyframes snow-fall {
-		/* offset y = tinggi tile → loop mulus tanpa lompatan */
+		/* Satu tile penuh: pola berulang sehingga ujung loop identik dengan awal. */
 		to {
-			background-position: 18px 150px, 60px 220px, 6px 126px;
+			transform: translate3d(0, var(--snow-tile), 0);
 		}
 	}
 
@@ -319,6 +351,9 @@ import MathScramble from '../ui/MathScramble.astro';
 		font-family: var(--font-mono);
 		font-size: 10px;
 		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
 	.window-live {

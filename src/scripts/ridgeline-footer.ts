@@ -82,6 +82,12 @@ export function initRidgelineFooter(root: HTMLElement): () => void {
 	let ceil = 0;
 	let fadeTo = 1;
 
+	// Scratch buffers reused every frame so the 30 fps draw loop does not allocate.
+	const rev = new Float32Array(layers);
+	const k = new Float32Array(layers);
+	const toneBase = new Float32Array(layers);
+	const fogDepth = new Float32Array(layers);
+
 	let raf = 0;
 	let visible = true;
 	let awake = true;
@@ -177,11 +183,6 @@ export function initRidgelineFooter(root: HTMLElement): () => void {
 		}
 
 		// Each ridge's reveal, back to front, and where its crest sits this frame.
-		const rev = new Float32Array(layers);
-		const k = new Float32Array(layers);
-		const toneBase = new Float32Array(layers);
-		const fogDepth = new Float32Array(layers);
-
 		for (let i = 0; i < layers; i++) {
 			const ki = layers > 1 ? i / (layers - 1) : 1;
 			const revI = age < 0 ? 0 : rdfEase((age - 380 - i * 170) / 1300);

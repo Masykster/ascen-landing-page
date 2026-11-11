@@ -675,6 +675,18 @@ button {
 	}
 }
 
+/* Pause animasi ambient saat section berada jauh di luar viewport. */
+[data-pause-offscreen].is-offscreen .hero-aurora .aurora,
+[data-pause-offscreen].is-offscreen .snow-layer,
+[data-pause-offscreen].is-offscreen .hero-stage,
+[data-pause-offscreen].is-offscreen .panel-stage::before,
+[data-pause-offscreen].is-offscreen .marquee-track,
+[data-pause-offscreen].is-offscreen .polar-ribbon,
+[data-pause-offscreen].is-offscreen .polar-layer--frost,
+[data-pause-offscreen].is-offscreen .ms-char {
+	animation-play-state: paused !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
 	html {
 		scroll-behavior: auto;
@@ -702,7 +714,7 @@ button {
 	.hero-stage,
 	.panel-stage::before,
 	.hero-aurora .aurora,
-	.hero-snow,
+	.snow-layer,
 	.polar-ribbon,
 	.polar-layer--frost {
 		animation: none !important;
