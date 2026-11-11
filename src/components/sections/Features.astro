@@ -1,42 +1,41 @@
 ---
-import CustomCursor from '../ui/CustomCursor.astro';
-import Icon from '../ui/Icon.astro';
+import kompetisiCover from '../../assets/images/kompetisi-amo-2026.avif';
+import latihan1 from '../../assets/images/bundles/latihan-matematika-1.avif';
+import latihan2 from '../../assets/images/bundles/latihan-matematika-2.avif';
+import latihan3 from '../../assets/images/bundles/latihan-matematika-3.avif';
+import tryout1 from '../../assets/images/bundles/tryout-tka-utbk-1.avif';
+import tryout2 from '../../assets/images/bundles/tryout-tka-utbk-2.avif';
+import tryout3 from '../../assets/images/bundles/tryout-tka-utbk-3.avif';
 import FeatureCard from './FeatureCard.astro';
-
-const amoBenefits = [
-	{ icon: 'monitor', tone: 'orange', name: '100% online', meta: 'SMA/SMK' },
-	{ icon: 'spark', tone: 'blue', name: 'E-sertifikat', meta: 'Semua peserta' },
-	{ icon: 'trophy', tone: 'green', name: 'Hadiah uang tunai', meta: 'Juara umum' },
-];
 
 const bundleLayers = ['front', 'back-a', 'back-b'];
 
 const tryoutBundles = [
 	{
-		src: 'https://cbt.ascendemy.id/storage/bundles/01M0EN8N5V63VY9WE57HTMMJFQ.png',
+		src: tryout1.src,
 		alt: 'Paket Tryout TKA & UTBK 1',
 	},
 	{
-		src: 'https://cbt.ascendemy.id/storage/bundles/01KN4R15X5KRF8B0ZX9PR1MY0N.png',
+		src: tryout2.src,
 		alt: 'Paket Tryout UTBK 2',
 	},
 	{
-		src: 'https://cbt.ascendemy.id/storage/bundles/01KN4QXJHPB9P6813Z9AER6DJ9.png',
+		src: tryout3.src,
 		alt: 'Paket Tryout UTBK 3',
 	},
 ];
 
 const latihanBundles = [
 	{
-		src: 'https://cbt.ascendemy.id/storage/bundles/01KK89D682Y2T9YY9TQC4SJY8N.webp',
+		src: latihan1.src,
 		alt: 'Paket Latihan Soal Matematika 1',
 	},
 	{
-		src: 'https://cbt.ascendemy.id/storage/bundles/01KN38WY81CFHAZ9X3P3XPCH0E.png',
+		src: latihan2.src,
 		alt: 'Paket Latihan Soal Matematika 2',
 	},
 	{
-		src: 'https://cbt.ascendemy.id/storage/bundles/01KZN9RKDRJMNE5PZWAS8CB2J6.png',
+		src: latihan3.src,
 		alt: 'Paket Latihan Soal Matematika 3',
 	},
 ];
@@ -60,27 +59,17 @@ const latihanBundles = [
 				description="Uji kemampuanmu di kompetisi nasional. 100% online, e-sertifikat, dan hadiah uang tunai untuk juara umum."
 				linkLabel="Lihat kompetisi"
 				href="https://cbt.ascendemy.id/kompetisi"
+				plate={false}
 			>
-				<div class="mock-panel amo-panel" data-cursor-zone>
-					<CustomCursor />
-					<span class="amo-watermark"><Icon name="trophy" size={108} /></span>
-					<div class="mock-head">
-						<span class="mock-title">Keunggulan kompetisi</span>
-					</div>
-					{amoBenefits.map((benefit, index) => (
-						<div class:list={['mock-row', index === 0 && 'is-featured']}>
-							<span class:list={['mock-avatar', benefit.tone !== 'orange' && benefit.tone]}>
-								<Icon name={benefit.icon} size={11} />
-							</span>
-							<span class="mock-name">{benefit.name}</span>
-							<span class="mock-points">{benefit.meta}</span>
-						</div>
-					))}
-					<div class="amo-foot">
-						<span class="amo-dot"></span>
-						<span>Pendaftaran dibuka · 100% online</span>
-					</div>
-				</div>
+				<img
+					class="competition-cover"
+					src={kompetisiCover.src}
+					alt="Banner Ascendemy Mathematics Olympiad 2026"
+					width="1200"
+					height="800"
+					loading="lazy"
+					decoding="async"
+				/>
 			</FeatureCard>
 
 			<FeatureCard
@@ -170,107 +159,21 @@ const latihanBundles = [
 		gap: 20px;
 	}
 
-	.mock-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 8px;
-		margin-bottom: 10px;
-	}
-
-	.mock-row {
-		display: flex;
-		align-items: center;
-		gap: 9px;
-		padding: 7px 0;
-		border-bottom: 1px solid #f3efe9;
-	}
-
-	.mock-row:last-child {
-		border-bottom: 0;
-	}
-
-	.mock-avatar {
-		width: 23px;
-		height: 23px;
-		flex: 0 0 auto;
-		display: grid;
-		place-items: center;
-		border-radius: 50%;
-		background: #fde3cf;
-		color: #c2410c;
-		font-size: 9px;
-		font-weight: 800;
-	}
-
-	.mock-avatar.blue {
-		background: #dbe8ff;
-		color: #1d4ed8;
-	}
-
-	.mock-avatar.green {
-		background: #dcf0de;
-		color: #2f6b3a;
-	}
-
-	.mock-name {
-		flex: 1;
-		font-size: 10px;
-		font-weight: 600;
-		color: #3f434a;
-	}
-
-	.mock-points {
-		font-family: var(--font-mono);
-		font-size: 9px;
-		color: #8a8f99;
-	}
-
-	.amo-panel {
-		overflow: hidden;
-		background: linear-gradient(180deg, #ffffff 0%, #fdf7f1 100%);
-	}
-
-	.amo-watermark {
-		position: absolute;
-		right: -16px;
-		bottom: -18px;
-		color: var(--orange-deep);
-		opacity: 0.06;
-		pointer-events: none;
-	}
-
-	.amo-watermark :global(svg) {
-		width: 108px;
-		height: 108px;
-	}
-
-	.mock-row.is-featured {
-		margin: 0 -9px;
-		padding: 7px 9px;
-		border-bottom-color: transparent;
-		border-radius: 10px;
+	.competition-cover {
+		display: block;
+		width: 100%;
+		height: auto;
+		border: 1px solid rgba(255, 255, 255, 0.75);
+		border-radius: 14px;
 		background: #fff;
-		box-shadow: 0 12px 22px -18px rgba(35, 39, 46, 0.6);
+		box-shadow: 0 16px 30px -22px rgba(35, 39, 46, 0.6);
+		transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+		will-change: transform;
 	}
 
-	.amo-foot {
-		display: flex;
-		align-items: center;
-		gap: 7px;
-		margin-top: 10px;
-		padding-top: 9px;
-		border-top: 1px dashed #f0e6d8;
-		font-size: 9px;
-		color: #9aa0ab;
-	}
-
-	.amo-dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 50%;
-		background: #46a758;
-		box-shadow: 0 0 0 3px rgba(70, 167, 88, 0.16);
+	:global(.feature-card:hover) .competition-cover,
+	:global(.feature-card:focus-visible) .competition-cover {
+		transform: translateY(-3px) rotate(-0.8deg);
 	}
 
 	.bundle-stack {
