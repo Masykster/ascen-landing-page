@@ -1,0 +1,628 @@
+---
+import Footer from '../components/layout/Footer.astro';
+import Header from '../components/layout/Header.astro';
+import ResourceCard from '../components/sections/ResourceCard.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+	title="Resource — Ascendemy"
+	description="Unduh worksheet dan baca materi belajar gratis untuk TKA, olimpiade, dan persiapan ujian bersama Ascendemy."
+>
+	<Header />
+
+	<main id="main-content">
+		<section class="resource-hero">
+			<div class="container">
+				<p class="eyebrow reveal">Resource</p>
+				<h1 class="reveal">Worksheet dan materi belajar gratis</h1>
+				<p class="lede reveal">
+					Pilih bahan belajar sesuai kebutuhanmu, lalu unduh worksheet atau baca materi langsung
+					dari halaman ini.
+				</p>
+			</div>
+		</section>
+
+		<section class="section resource-archive">
+			<div class="container">
+				<div class="archive-head reveal">
+					<div>
+						<p class="eyebrow">Kumpulan resource</p>
+						<h2>Semua resource</h2>
+					</div>
+					<span class="archive-count" data-resource-count>Memuat resource…</span>
+				</div>
+
+				<div
+					class="resource-tabs"
+					data-resource-tabs
+					role="tablist"
+					aria-label="Filter jenis resource"
+					hidden
+				></div>
+
+				<div class="resource-skeleton" data-resource-loading aria-hidden="true">
+					{
+						Array.from({ length: 3 }).map(() => (
+							<div class="skeleton-card">
+								<span class="skeleton-media"></span>
+								<div class="skeleton-body">
+									<span class="skeleton-line skeleton-line--xs"></span>
+									<span class="skeleton-line skeleton-line--lg"></span>
+									<span class="skeleton-line"></span>
+									<span class="skeleton-line skeleton-line--sm"></span>
+								</div>
+							</div>
+						))
+					}
+				</div>
+
+				<div class="resource-grid" data-resource-grid role="tabpanel" aria-live="polite"></div>
+
+				<p class="resource-empty" data-resource-empty hidden>
+					Belum ada resource yang dipublikasikan.
+				</p>
+
+				<div class="resource-error" data-resource-error hidden role="alert">
+					<p class="error-kicker">Koneksi terputus</p>
+					<h2>Resource belum bisa dimuat</h2>
+					<p>Periksa koneksimu lalu coba muat ulang daftar resource.</p>
+					<button class="btn btn-primary" type="button" data-resource-retry>Coba lagi</button>
+				</div>
+
+				<template id="resource-card-template">
+					<ResourceCard
+						href="/resource"
+						type="worksheet"
+						title="Resource belajar gratis"
+						excerpt="Worksheet dan materi belajar untuk menemanimu latihan."
+						subject="Matematika"
+						level="SMA"
+						thumbnailUrl="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+						cta="Lihat resource"
+					/>
+				</template>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script>
+	import {
+		fetchCbt,
+		resourceTypeMeta,
+		resourceUrl,
+		type ApiResponse,
+		type CbtResource,
+		type ResourceType,
+	} from '../lib/cbt-api';
+	import { absoluteUrl } from '../lib/cbt-content';
+
+	type ResourceFilter = 'all' | ResourceType;
+
+	const TYPE_ORDER: ResourceType[] = ['worksheet', 'material', 'game'];
+	const TYPE_LABEL: Record<ResourceType, string> = {
+		worksheet: 'Worksheet',
+		material: 'Materi',
+		game: 'Games',
+	};
+	const TYPE_ICON: Record<ResourceType, string> = {
+		worksheet: 'file',
+		material: 'book',
+		game: 'gamepad',
+	};
+
+	const grid = document.querySelector<HTMLElement>('[data-resource-grid]');
+	const count = document.querySelector<HTMLElement>('[data-resource-count]');
+	const tabs = document.querySelector<HTMLElement>('[data-resource-tabs]');
+	const loading = document.querySelector<HTMLElement>('[data-resource-loading]');
+	const empty = document.querySelector<HTMLElement>('[data-resource-empty]');
+	const errorEl = document.querySelector<HTMLElement>('[data-resource-error]');
+	const retry = document.querySelector<HTMLButtonElement>('[data-resource-retry]');
+	const template = document.querySelector<HTMLTemplateElement>('#resource-card-template');
+	const requestedType = new URLSearchParams(window.location.search).get('type');
+
+	let allItems: CbtResource[] = [];
+	let availableTypes: ResourceType[] = [];
+	let activeType: ResourceFilter = 'all';
+	let isLoading = false;
+
+	const isResourceType = (value: string | null): value is ResourceType =>
+		value === 'worksheet' || value === 'material' || value === 'game';
+
+	const setTypeParam = (type: ResourceFilter) => {
+		const url = new URL(window.location.href);
+
+		if (type === 'all') {
+			url.searchParams.delete('type');
+		} else {
+			url.searchParams.set('type', type);
+		}
+
+		window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+	};
+
+	const buildCard = (item: CbtResource) => {
+		if (!template) return null;
+
+		const card = template.content.firstElementChild?.cloneNode(true) as HTMLAnchorElement | undefined;
+		if (!card) return null;
+
+		const meta = resourceTypeMeta(item.type);
+		card.href = resourceUrl(item.slug);
+
+		for (const type of TYPE_ORDER) {
+			card.classList.remove(`resource-card--${type}`);
+		}
+		card.classList.add(`resource-card--${item.type}`);
+
+		const badge = card.querySelector<HTMLElement>('[data-resource-badge]');
+		if (badge) {
+			badge.textContent = meta.label;
+			badge.classList.remove(
+				'resource-badge--green',
+				'resource-badge--blue',
+				'resource-badge--orange',
+			);
+			badge.classList.add(`resource-badge--${meta.tone}`);
+		}
+
+		const image = card.querySelector<HTMLImageElement>('[data-resource-image]');
+		const placeholder = card.querySelector<HTMLElement>('[data-resource-placeholder]');
+
+		if (item.thumbnail_url) {
+			if (image) {
+				image.hidden = false;
+				image.src = absoluteUrl(item.thumbnail_url);
+				image.alt = item.title;
+			}
+			if (placeholder) placeholder.hidden = true;
+		} else {
+			if (image) {
+				image.hidden = true;
+				image.removeAttribute('src');
+			}
+			if (placeholder) {
+				placeholder.hidden = false;
+				const use = placeholder.querySelector('use');
+				if (use) use.setAttribute('href', `#i-${TYPE_ICON[item.type]}`);
+			}
+		}
+
+		const metaEl = card.querySelector<HTMLElement>('[data-resource-meta]');
+		if (metaEl) {
+			const metaLine = [item.subject, item.level].filter(Boolean).join(' · ');
+			metaEl.textContent = metaLine;
+			metaEl.hidden = !metaLine;
+		}
+
+		const title = card.querySelector<HTMLElement>('[data-resource-title]');
+		if (title) title.textContent = item.title;
+
+		const excerpt = card.querySelector<HTMLElement>('[data-resource-excerpt]');
+		if (excerpt) {
+			if (item.excerpt) {
+				excerpt.textContent = item.excerpt;
+				excerpt.hidden = false;
+			} else {
+				excerpt.remove();
+			}
+		}
+
+		const cta = card.querySelector<HTMLElement>('[data-resource-cta]');
+		if (cta) cta.textContent = meta.cta;
+
+		return card;
+	};
+
+	const updateTabState = () => {
+		if (!tabs) return;
+
+		const buttons = Array.from(tabs.querySelectorAll<HTMLButtonElement>('[data-resource-tab]'));
+		buttons.forEach((button) => {
+			const isActive = button.dataset.resourceTab === activeType;
+			button.classList.toggle('is-active', isActive);
+			button.setAttribute('aria-selected', String(isActive));
+			button.tabIndex = isActive ? 0 : -1;
+		});
+	};
+
+	const render = () => {
+		const filtered = activeType === 'all' ? allItems : allItems.filter((item) => item.type === activeType);
+
+		if (count) count.textContent = `${filtered.length} resource`;
+
+		if (grid) {
+			const cards = filtered
+				.map(buildCard)
+				.filter((card): card is HTMLAnchorElement => card !== null);
+			grid.replaceChildren(...cards);
+			grid.hidden = cards.length === 0;
+		}
+
+		if (empty) {
+			empty.hidden = filtered.length !== 0;
+			empty.textContent =
+				activeType === 'all'
+					? 'Belum ada resource yang dipublikasikan.'
+					: `Belum ada ${TYPE_LABEL[activeType].toLowerCase()} yang dipublikasikan.`;
+		}
+
+		updateTabState();
+	};
+
+	const setActiveType = (nextType: ResourceFilter) => {
+		if (nextType !== 'all' && !availableTypes.includes(nextType)) return;
+
+		activeType = nextType;
+		setTypeParam(nextType);
+		render();
+	};
+
+	const buildTabs = () => {
+		if (!tabs) return;
+
+		const filters: { value: ResourceFilter; label: string }[] = [
+			{ value: 'all', label: 'Semua' },
+			...availableTypes.map((type) => ({ value: type, label: TYPE_LABEL[type] })),
+		];
+
+		tabs.replaceChildren(
+			...filters.map((filter) => {
+				const button = document.createElement('button');
+				button.type = 'button';
+				button.className = 'resource-tab';
+				button.dataset.resourceTab = filter.value;
+				button.textContent = filter.label;
+				button.setAttribute('role', 'tab');
+				button.setAttribute('aria-selected', 'false');
+				button.tabIndex = -1;
+				return button;
+			}),
+		);
+
+		tabs.hidden = false;
+		updateTabState();
+	};
+
+	const load = async () => {
+		if (isLoading) return;
+		isLoading = true;
+
+		if (loading) loading.hidden = false;
+		if (tabs) tabs.hidden = true;
+		if (grid) grid.hidden = true;
+		if (empty) empty.hidden = true;
+		if (errorEl) errorEl.hidden = true;
+		if (count) count.textContent = 'Memuat resource…';
+
+		try {
+			const response = await fetchCbt<ApiResponse<CbtResource[]>>('landing/resources?limit=100');
+			allItems = response.data;
+			availableTypes = TYPE_ORDER.filter((type) => allItems.some((item) => item.type === type));
+			activeType =
+				isResourceType(requestedType) && availableTypes.includes(requestedType)
+					? requestedType
+					: 'all';
+
+			if (requestedType && activeType === 'all') setTypeParam('all');
+
+			buildTabs();
+			render();
+		} catch {
+			if (count) count.textContent = '0 resource';
+			if (tabs) tabs.hidden = true;
+			if (grid) grid.hidden = true;
+			if (empty) empty.hidden = true;
+			if (errorEl) errorEl.hidden = false;
+		} finally {
+			if (loading) loading.hidden = true;
+			isLoading = false;
+		}
+	};
+
+	tabs?.addEventListener('click', (event) => {
+		const button = (event.target as HTMLElement).closest<HTMLButtonElement>('[data-resource-tab]');
+		const type = button?.dataset.resourceTab;
+		if (!type) return;
+
+		if (type === 'all' || isResourceType(type)) setActiveType(type);
+	});
+
+	tabs?.addEventListener('keydown', (event) => {
+		if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+
+		const buttons = Array.from(tabs.querySelectorAll<HTMLButtonElement>('[data-resource-tab]'));
+		if (!buttons.length) return;
+
+		event.preventDefault();
+		const currentIndex = buttons.indexOf(document.activeElement as HTMLButtonElement);
+		const nextIndex =
+			(currentIndex + (event.key === 'ArrowRight' ? 1 : -1) + buttons.length) % buttons.length;
+		const nextButton = buttons[nextIndex];
+		nextButton?.focus();
+		nextButton?.click();
+	});
+
+	retry?.addEventListener('click', () => {
+		void load();
+	});
+
+	void load();
+</script>
+
+<style>
+	.eyebrow {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.resource-hero {
+		position: relative;
+		padding: clamp(64px, 8.5vw, 108px) 0 clamp(44px, 5.5vw, 68px);
+		background:
+			radial-gradient(760px 360px at 88% -20%, rgba(249, 115, 22, 0.08), transparent 70%),
+			var(--cream);
+		border-bottom: 1px solid var(--line-warm);
+	}
+
+	.resource-hero h1 {
+		margin: 18px 0 0;
+		max-width: 800px;
+		font-family: var(--font-display);
+		font-size: clamp(42px, 6vw, 74px);
+		font-weight: 600;
+		line-height: 1.02;
+		letter-spacing: -0.045em;
+		color: var(--ink);
+		text-wrap: balance;
+	}
+
+	.lede {
+		margin: 20px 0 0;
+		max-width: 620px;
+		font-size: 17px;
+		line-height: 1.65;
+		color: var(--muted);
+		text-wrap: pretty;
+	}
+
+	.resource-archive {
+		padding: clamp(56px, 7vw, 88px) 0 clamp(72px, 9vw, 112px);
+	}
+
+	.archive-head {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 20px;
+		margin-bottom: 24px;
+	}
+
+	.archive-head h2 {
+		margin: 10px 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(30px, 3.8vw, 44px);
+		font-weight: 600;
+		line-height: 1.06;
+		letter-spacing: -0.035em;
+		color: var(--ink);
+	}
+
+	.archive-count {
+		font-family: var(--font-mono);
+		font-size: 10.5px;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--faint);
+		white-space: nowrap;
+	}
+
+	.resource-tabs {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+		margin-bottom: 28px;
+	}
+
+	.resource-tabs[hidden] {
+		display: none;
+	}
+
+	.resource-tabs :global(.resource-tab) {
+		padding: 9px 14px;
+		border: 1px solid var(--line-warm);
+		border-radius: 999px;
+		background: #fff;
+		color: var(--muted);
+		font-size: 12.5px;
+		font-weight: 600;
+		cursor: pointer;
+		transition:
+			background-color 0.2s ease,
+			border-color 0.2s ease,
+			color 0.2s ease;
+	}
+
+	.resource-tabs :global(.resource-tab:hover) {
+		border-color: #d8d0c5;
+		color: var(--ink);
+	}
+
+	.resource-tabs :global(.resource-tab.is-active) {
+		border-color: var(--orange);
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.resource-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 24px;
+	}
+
+	.resource-grid[hidden],
+	.resource-empty[hidden],
+	.resource-error[hidden],
+	.resource-skeleton[hidden] {
+		display: none;
+	}
+
+	.resource-skeleton {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 24px;
+	}
+
+	.skeleton-card {
+		overflow: hidden;
+		border: 1px solid var(--line-warm);
+		border-radius: var(--radius);
+		background: #fff;
+	}
+
+	.skeleton-media {
+		display: block;
+		aspect-ratio: 16 / 10;
+		background: linear-gradient(110deg, #f4eee7 30%, #fbf7f2 45%, #f4eee7 60%);
+		background-size: 220% 100%;
+		animation: resource-shimmer 1.4s ease-in-out infinite;
+	}
+
+	.skeleton-body {
+		display: grid;
+		gap: 10px;
+		padding: 22px;
+	}
+
+	.skeleton-line {
+		display: block;
+		width: 100%;
+		height: 10px;
+		border-radius: 999px;
+		background: #f1ece5;
+	}
+
+	.skeleton-line--xs {
+		width: 34%;
+		height: 7px;
+	}
+
+	.skeleton-line--lg {
+		width: 82%;
+		height: 18px;
+	}
+
+	.skeleton-line--sm {
+		width: 54%;
+	}
+
+	.resource-empty {
+		margin: 0;
+		padding: 32px;
+		border: 1px dashed var(--line-warm);
+		border-radius: var(--radius);
+		color: var(--muted);
+		text-align: center;
+	}
+
+	.resource-error {
+		max-width: 560px;
+		margin: 0 auto;
+		padding: 34px;
+		border: 1px solid var(--line-warm);
+		border-radius: var(--radius);
+		background: #fff;
+		text-align: center;
+	}
+
+	.error-kicker {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.resource-error h2 {
+		margin: 12px 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(26px, 3vw, 34px);
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.resource-error p:not(.error-kicker) {
+		margin: 10px 0 22px;
+		color: var(--muted);
+		line-height: 1.6;
+	}
+
+	@keyframes resource-shimmer {
+		from {
+			background-position: 100% 0;
+		}
+		to {
+			background-position: -120% 0;
+		}
+	}
+
+	@media (max-width: 900px) {
+		.resource-grid,
+		.resource-skeleton {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 640px) {
+		.archive-head {
+			align-items: flex-start;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.resource-tabs {
+			flex-wrap: nowrap;
+			overflow-x: auto;
+			padding-bottom: 4px;
+			scrollbar-width: none;
+		}
+
+		.resource-tabs::-webkit-scrollbar {
+			display: none;
+		}
+
+		.resource-tabs :global(.resource-tab) {
+			flex: 0 0 auto;
+		}
+
+		.resource-grid,
+		.resource-skeleton {
+			grid-template-columns: 1fr;
+		}
+
+		.skeleton-card:nth-child(n + 2) {
+			display: none;
+		}
+
+		.resource-error {
+			padding: 26px 20px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.skeleton-media {
+			animation: none;
+		}
+	}
+</style>

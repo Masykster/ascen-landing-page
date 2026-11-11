@@ -1,0 +1,249 @@
+---
+import Button from '../ui/Button.astro';
+import ResourceCard from './ResourceCard.astro';
+---
+
+<section class="section section--cream resource-section" id="resource" data-resource-section hidden>
+	<div class="container">
+		<div class="section-head section-head--split">
+			<div>
+				<p class="eyebrow reveal">Resource</p>
+				<h2 class="reveal">Belajar lebih seru dengan resource gratis</h2>
+				<p class="reveal">
+					Unduh worksheet dan baca materi belajar yang disusun untuk menemanimu latihan dan
+					menghadapi ujian.
+				</p>
+			</div>
+			<Button class="reveal" variant="ghost" href="/resource" icon="arrow">
+				Semua resource
+			</Button>
+		</div>
+
+		<div class="resource-grid" data-resource-grid></div>
+	</div>
+
+	<template id="home-resource-card-template">
+		<ResourceCard
+			href="/resource"
+			type="worksheet"
+			title="Resource belajar gratis"
+			excerpt="Worksheet dan materi belajar untuk menemanimu latihan."
+			subject="Matematika"
+			level="SMA"
+			thumbnailUrl="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="
+			cta="Lihat resource"
+		/>
+	</template>
+</section>
+
+<script>
+	import {
+		fetchCbt,
+		resourceTypeMeta,
+		resourceUrl,
+		type ApiResponse,
+		type CbtResource,
+		type ResourceType,
+	} from '../../lib/cbt-api';
+	import { absoluteUrl } from '../../lib/cbt-content';
+
+	const TYPE_ICON: Record<ResourceType, string> = {
+		worksheet: 'file',
+		material: 'book',
+		game: 'gamepad',
+	};
+
+	const section = document.querySelector<HTMLElement>('[data-resource-section]');
+	const grid = document.querySelector<HTMLElement>('[data-resource-grid]');
+	const template = document.querySelector<HTMLTemplateElement>('#home-resource-card-template');
+
+	const buildCard = (item: CbtResource) => {
+		if (!template) return null;
+
+		const card = template.content.firstElementChild?.cloneNode(true) as HTMLAnchorElement | undefined;
+		if (!card) return null;
+
+		const meta = resourceTypeMeta(item.type);
+		card.href = resourceUrl(item.slug);
+
+		for (const type of ['worksheet', 'material', 'game'] as const) {
+			card.classList.remove(`resource-card--${type}`);
+		}
+		card.classList.add(`resource-card--${item.type}`);
+
+		const badge = card.querySelector<HTMLElement>('[data-resource-badge]');
+		if (badge) {
+			badge.textContent = meta.label;
+			badge.classList.remove(
+				'resource-badge--green',
+				'resource-badge--blue',
+				'resource-badge--orange',
+			);
+			badge.classList.add(`resource-badge--${meta.tone}`);
+		}
+
+		const image = card.querySelector<HTMLImageElement>('[data-resource-image]');
+		const placeholder = card.querySelector<HTMLElement>('[data-resource-placeholder]');
+
+		if (item.thumbnail_url) {
+			if (image) {
+				image.hidden = false;
+				image.src = absoluteUrl(item.thumbnail_url);
+				image.alt = item.title;
+			}
+			if (placeholder) placeholder.hidden = true;
+		} else {
+			if (image) {
+				image.hidden = true;
+				image.removeAttribute('src');
+			}
+			if (placeholder) {
+				placeholder.hidden = false;
+				const use = placeholder.querySelector('use');
+				if (use) use.setAttribute('href', `#i-${TYPE_ICON[item.type]}`);
+			}
+		}
+
+		const metaEl = card.querySelector<HTMLElement>('[data-resource-meta]');
+		if (metaEl) {
+			const metaLine = [item.subject, item.level].filter(Boolean).join(' · ');
+			metaEl.textContent = metaLine;
+			metaEl.hidden = !metaLine;
+		}
+
+		const title = card.querySelector<HTMLElement>('[data-resource-title]');
+		if (title) title.textContent = item.title;
+
+		const excerpt = card.querySelector<HTMLElement>('[data-resource-excerpt]');
+		if (excerpt) {
+			if (item.excerpt) {
+				excerpt.textContent = item.excerpt;
+				excerpt.hidden = false;
+			} else {
+				excerpt.remove();
+			}
+		}
+
+		const cta = card.querySelector<HTMLElement>('[data-resource-cta]');
+		if (cta) cta.textContent = meta.cta;
+
+		return card;
+	};
+
+	if (section && grid) {
+		void fetchCbt<ApiResponse<CbtResource[]>>('landing/resources?limit=6')
+			.then((response) => {
+				const items = response.data.slice(0, 6);
+				if (!items.length) return;
+
+				const cards = items
+					.map(buildCard)
+					.filter((card): card is HTMLAnchorElement => card !== null);
+
+				if (!cards.length) return;
+
+				grid.replaceChildren(...cards);
+				section.hidden = false;
+			})
+			.catch(() => {
+				/* Biarkan section tersembunyi jika API belum tersedia. */
+			});
+	}
+</script>
+
+<style>
+	.resource-section[hidden] {
+		display: none;
+	}
+
+	.eyebrow {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 11px;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.section-head {
+		max-width: 760px;
+		margin: 0 auto 48px;
+		text-align: center;
+	}
+
+	.section-head h2 {
+		margin: 14px 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(34px, 4.2vw, 52px);
+		font-weight: 600;
+		line-height: 1.06;
+		letter-spacing: -0.04em;
+		color: var(--ink);
+		text-wrap: balance;
+	}
+
+	.section-head p {
+		margin: 16px auto 0;
+		max-width: 620px;
+		font-size: 16px;
+		line-height: 1.65;
+		color: var(--muted);
+	}
+
+	.section-head--split {
+		max-width: none;
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 32px;
+		margin-bottom: 38px;
+		text-align: left;
+	}
+
+	.section-head--split > div {
+		max-width: 640px;
+	}
+
+	.section-head--split h2 {
+		margin-bottom: 0;
+	}
+
+	.section-head--split p {
+		margin-left: 0;
+	}
+
+	.resource-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 24px;
+	}
+
+	@media (max-width: 900px) {
+		.resource-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 640px) {
+		.section-head {
+			margin-bottom: 32px;
+		}
+
+		.section-head--split {
+			display: block;
+		}
+
+		.section-head--split :global(.btn) {
+			margin-top: 18px;
+		}
+
+		.section-head h2 {
+			font-size: clamp(30px, 8vw, 38px);
+		}
+
+		.resource-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

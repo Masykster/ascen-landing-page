@@ -1,0 +1,799 @@
+---
+import Footer from '../../components/layout/Footer.astro';
+import Header from '../../components/layout/Header.astro';
+import Icon from '../../components/ui/Icon.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+	title="Resource — Ascendemy"
+	description="Lihat dan unduh worksheet atau baca materi belajar gratis dari Ascendemy."
+>
+	<Header />
+
+	<main id="main-content">
+		<section class="resource-detail-hero">
+			<div class="container">
+				<a class="resource-back reveal" href="/resource">
+					<span aria-hidden="true">←</span> Kembali ke resource
+				</a>
+				<div class="detail-hero-inner">
+					<span class="resource-badge" data-resource-badge hidden></span>
+					<h1 class="reveal" data-resource-title>Memuat resource…</h1>
+					<p class="lede reveal" data-resource-excerpt hidden></p>
+					<p class="resource-meta reveal" data-resource-meta hidden></p>
+				</div>
+			</div>
+		</section>
+
+		<section class="section resource-detail-section">
+			<div class="container resource-detail-layout">
+				<figure class="resource-thumbnail" data-resource-thumbnail hidden>
+					<img data-resource-thumbnail-image alt="" loading="eager" />
+				</figure>
+
+				<div class="resource-loading" data-resource-loading aria-live="polite">
+					<span class="loading-line loading-line--lg"></span>
+					<span class="loading-line"></span>
+					<span class="loading-line"></span>
+					<span class="loading-line loading-line--sm"></span>
+				</div>
+
+				<div class="resource-error" data-resource-error hidden role="alert">
+					<p class="error-kicker" data-resource-error-kicker>404</p>
+					<h2 data-resource-error-title>Resource tidak ditemukan</h2>
+					<p data-resource-error-text>
+						Resource yang kamu cari mungkin sudah dipindahkan atau belum dipublikasikan.
+					</p>
+					<a class="btn btn-primary" href="/resource">Lihat semua resource</a>
+				</div>
+
+				<div data-resource-content hidden>
+					<div class="resource-body" data-resource-body></div>
+
+					<div class="resource-game" data-resource-game hidden>
+						<span class="resource-game-icon" aria-hidden="true"><Icon name="gamepad" size={38} /></span>
+						<p class="resource-game-kicker">Games</p>
+						<h2>Game segera hadir</h2>
+						<p>
+							Resource game sudah disiapkan, tetapi player-nya belum tersedia. Kembali lagi
+							untuk mencoba permainan belajar dari Ascendemy.
+						</p>
+						<a class="btn btn-ghost" href="/resource">Cari resource lain</a>
+					</div>
+
+					<div class="resource-file" data-resource-file hidden>
+						<span class="resource-file-icon" aria-hidden="true"><Icon name="file" size={22} /></span>
+						<div class="resource-file-copy">
+							<span class="resource-file-kicker">File worksheet</span>
+							<strong data-resource-file-name>File worksheet</strong>
+							<span class="resource-file-kind" data-resource-file-kind></span>
+						</div>
+						<a
+							class="btn btn-primary resource-file-action"
+							data-resource-file-link
+							target="_blank"
+							rel="noopener noreferrer"
+							hidden
+						>
+							<span data-resource-file-label>Unduh worksheet</span>
+							<Icon name="download" size={16} />
+						</a>
+						<button
+							class="btn btn-ghost resource-file-action"
+							type="button"
+							data-resource-file-disabled
+							disabled
+							hidden
+						>
+							File belum tersedia
+						</button>
+					</div>
+				</div>
+			</div>
+		</section>
+	</main>
+
+	<Footer />
+</BaseLayout>
+
+<script>
+	import {
+		CbtApiError,
+		fetchCbt,
+		formatDate,
+		resourceTypeMeta,
+		type ApiResponse,
+		type CbtResourceDetail,
+	} from '../../lib/cbt-api';
+	import { absoluteUrl, renderContent } from '../../lib/cbt-content';
+
+	const slug = new URLSearchParams(window.location.search).get('slug')?.trim() ?? '';
+	const titleEl = document.querySelector<HTMLElement>('[data-resource-title]');
+	const excerptEl = document.querySelector<HTMLElement>('[data-resource-excerpt]');
+	const metaEl = document.querySelector<HTMLElement>('[data-resource-meta]');
+	const badgeEl = document.querySelector<HTMLElement>('[data-resource-badge]');
+	const thumbnailEl = document.querySelector<HTMLElement>('[data-resource-thumbnail]');
+	const thumbnailImage = document.querySelector<HTMLImageElement>('[data-resource-thumbnail-image]');
+	const loadingEl = document.querySelector<HTMLElement>('[data-resource-loading]');
+	const errorEl = document.querySelector<HTMLElement>('[data-resource-error]');
+	const errorKicker = document.querySelector<HTMLElement>('[data-resource-error-kicker]');
+	const errorTitle = document.querySelector<HTMLElement>('[data-resource-error-title]');
+	const errorText = document.querySelector<HTMLElement>('[data-resource-error-text]');
+	const contentEl = document.querySelector<HTMLElement>('[data-resource-content]');
+	const bodyEl = document.querySelector<HTMLElement>('[data-resource-body]');
+	const gameEl = document.querySelector<HTMLElement>('[data-resource-game]');
+	const fileEl = document.querySelector<HTMLElement>('[data-resource-file]');
+	const fileNameEl = document.querySelector<HTMLElement>('[data-resource-file-name]');
+	const fileKindEl = document.querySelector<HTMLElement>('[data-resource-file-kind]');
+	const fileLink = document.querySelector<HTMLAnchorElement>('[data-resource-file-link]');
+	const fileLabel = document.querySelector<HTMLElement>('[data-resource-file-label]');
+	const fileDisabled = document.querySelector<HTMLButtonElement>('[data-resource-file-disabled]');
+	const metaDescription = document.querySelector<HTMLMetaElement>('meta[name="description"]');
+
+	const setMeta = (title: string, description: string) => {
+		document.title = `${title} — Ascendemy`;
+		if (metaDescription) metaDescription.content = description;
+	};
+
+	const setBadge = (type: CbtResourceDetail['type']) => {
+		if (!badgeEl) return;
+
+		const meta = resourceTypeMeta(type);
+		badgeEl.hidden = false;
+		badgeEl.textContent = meta.label;
+		badgeEl.classList.remove(
+			'resource-badge--green',
+			'resource-badge--blue',
+			'resource-badge--orange',
+		);
+		badgeEl.classList.add(`resource-badge--${meta.tone}`);
+	};
+
+	const showError = (title: string, message: string, kicker = 'Error') => {
+		loadingEl?.remove();
+		if (contentEl) contentEl.hidden = true;
+		if (thumbnailEl) thumbnailEl.hidden = true;
+		if (badgeEl) badgeEl.hidden = true;
+		if (excerptEl) excerptEl.hidden = true;
+		if (metaEl) metaEl.hidden = true;
+		if (titleEl) titleEl.textContent = title;
+		if (errorEl) errorEl.hidden = false;
+		if (errorKicker) errorKicker.textContent = kicker;
+		if (errorTitle) errorTitle.textContent = title;
+		if (errorText) errorText.textContent = message;
+		setMeta(title, message);
+	};
+
+	const getFileName = (value: string): string => {
+		try {
+			const path = new URL(value).pathname;
+			const name = decodeURIComponent(path.split('/').filter(Boolean).pop() ?? '');
+			return name || 'File worksheet';
+		} catch {
+			return 'File worksheet';
+		}
+	};
+
+	const renderFile = (resource: CbtResourceDetail) => {
+		if (!fileEl || !fileLink || !fileDisabled) return;
+
+		if (resource.type !== 'worksheet') {
+			fileEl.hidden = true;
+			return;
+		}
+
+		fileEl.hidden = false;
+
+		const rawUrl = resource.file_url ? absoluteUrl(resource.file_url) : '';
+
+		if (!rawUrl) {
+			fileLink.hidden = true;
+			fileDisabled.hidden = false;
+			if (fileNameEl) fileNameEl.textContent = 'File worksheet';
+			if (fileKindEl) fileKindEl.textContent = 'Belum ada file yang dilampirkan.';
+			return;
+		}
+
+		const fileName = getFileName(rawUrl);
+		const isPdf = resource.file_type === 'pdf';
+
+		if (fileNameEl) fileNameEl.textContent = fileName;
+		if (fileKindEl) fileKindEl.textContent = isPdf ? 'PDF · siap diunduh' : 'Gambar · bisa dilihat';
+		if (fileLabel) fileLabel.textContent = isPdf ? 'Unduh worksheet' : 'Lihat worksheet';
+		if (resource.file_type) {
+			fileLink.href = rawUrl;
+			fileLink.hidden = false;
+			fileDisabled.hidden = true;
+
+			if (isPdf) {
+				fileLink.setAttribute('download', fileName);
+			} else {
+				fileLink.removeAttribute('download');
+			}
+		} else {
+			fileLink.hidden = true;
+			fileDisabled.hidden = false;
+		}
+	};
+
+	const render = (resource: CbtResourceDetail) => {
+		setBadge(resource.type);
+
+		if (titleEl) titleEl.textContent = resource.title;
+		if (excerptEl) {
+			excerptEl.textContent = resource.excerpt;
+			excerptEl.hidden = !resource.excerpt;
+		}
+
+		if (metaEl) {
+			const metaParts = [
+				resource.subject,
+				resource.level,
+				formatDate(resource.published_at),
+			].filter((part): part is string => Boolean(part));
+			metaEl.textContent = metaParts.join(' · ');
+			metaEl.hidden = metaParts.length === 0;
+		}
+
+		if (thumbnailEl && thumbnailImage && resource.thumbnail_url) {
+			thumbnailImage.src = absoluteUrl(resource.thumbnail_url);
+			thumbnailImage.alt = resource.title;
+			thumbnailEl.hidden = false;
+		}
+
+		if (contentEl) contentEl.hidden = false;
+		if (bodyEl) bodyEl.hidden = resource.type !== 'material';
+		if (gameEl) gameEl.hidden = resource.type !== 'game';
+		if (fileEl) fileEl.hidden = resource.type !== 'worksheet';
+
+		if (resource.type === 'material' && bodyEl) {
+			if (resource.content?.trim()) {
+				renderContent(resource.content, bodyEl);
+			} else {
+				bodyEl.textContent = 'Materi belum tersedia.';
+			}
+		}
+
+		renderFile(resource);
+
+		loadingEl?.remove();
+		if (errorEl) errorEl.hidden = true;
+
+		setMeta(
+			`${resource.title} — Resource`,
+			resource.excerpt || 'Resource belajar gratis dari Ascendemy.',
+		);
+	};
+
+	if (!slug) {
+		showError(
+			'Resource tidak ditemukan',
+			'Tautan resource tidak lengkap. Kembali ke halaman resource untuk memilih bahan belajar.',
+			'404',
+		);
+	} else {
+		void fetchCbt<ApiResponse<CbtResourceDetail>>(
+			`landing/resources/${encodeURIComponent(slug)}`,
+		)
+			.then((response) => render(response.data))
+			.catch((error: unknown) => {
+				const notFound = error instanceof CbtApiError && error.status === 404;
+				showError(
+					notFound ? 'Resource tidak ditemukan' : 'Resource tidak dapat dimuat',
+					notFound
+						? 'Resource ini mungkin sudah dipindahkan atau belum dipublikasikan.'
+						: 'Resource belum tersedia atau koneksi ke server sedang bermasalah. Coba lagi beberapa saat lagi.',
+					notFound ? '404' : 'Error',
+				);
+			});
+	}
+</script>
+
+<style>
+	.resource-detail-hero {
+		padding: clamp(56px, 7.5vw, 96px) 0 clamp(36px, 4.5vw, 56px);
+		background:
+			radial-gradient(680px 320px at 85% -10%, rgba(249, 115, 22, 0.08), transparent 72%),
+			var(--cream);
+		border-bottom: 1px solid var(--line-warm);
+	}
+
+	.resource-back {
+		display: inline-flex;
+		align-items: center;
+		gap: 7px;
+		font-family: var(--font-mono);
+		font-size: 10.5px;
+		font-weight: 600;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted);
+		transition: color 0.2s ease;
+	}
+
+	.resource-back:hover {
+		color: var(--orange-deep);
+	}
+
+	.detail-hero-inner {
+		margin-top: 26px;
+	}
+
+	.resource-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 6px 10px;
+		border-radius: 999px;
+		font-family: var(--font-mono);
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+	}
+
+	.resource-badge[hidden] {
+		display: none;
+	}
+
+	.resource-badge--green {
+		background: #dcf0de;
+		color: #2f6b3a;
+	}
+
+	.resource-badge--blue {
+		background: #dbe8ff;
+		color: #1d4ed8;
+	}
+
+	.resource-badge--orange {
+		background: #fde3cf;
+		color: #c2410c;
+	}
+
+	.resource-detail-hero h1 {
+		margin: 16px 0 0;
+		max-width: 900px;
+		font-family: var(--font-display);
+		font-size: clamp(40px, 5.8vw, 68px);
+		font-weight: 600;
+		line-height: 1.04;
+		letter-spacing: -0.045em;
+		color: var(--ink);
+		text-wrap: balance;
+	}
+
+	.lede {
+		margin: 18px 0 0;
+		max-width: 680px;
+		font-size: 17px;
+		line-height: 1.65;
+		color: var(--muted);
+		text-wrap: pretty;
+	}
+
+	.lede[hidden] {
+		display: none;
+	}
+
+	.resource-meta {
+		margin: 20px 0 0;
+		font-family: var(--font-mono);
+		font-size: 10.5px;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.resource-meta[hidden] {
+		display: none;
+	}
+
+	.resource-detail-section {
+		padding: clamp(48px, 6vw, 80px) 0 clamp(72px, 9vw, 112px);
+	}
+
+	.resource-detail-layout {
+		max-width: 860px;
+	}
+
+	.resource-thumbnail {
+		margin: 0 0 32px;
+		overflow: hidden;
+		aspect-ratio: 16 / 10;
+		border: 1px solid var(--line-warm);
+		border-radius: var(--radius);
+		background: #f3eee8;
+	}
+
+	.resource-thumbnail[hidden] {
+		display: none;
+	}
+
+	.resource-thumbnail img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.resource-loading {
+		display: grid;
+		gap: 14px;
+		padding: 8px 0;
+	}
+
+	.resource-loading[hidden] {
+		display: none;
+	}
+
+	.loading-line {
+		display: block;
+		width: 100%;
+		height: 12px;
+		border-radius: 999px;
+		background: #f1ece5;
+		animation: resource-pulse 1.4s ease-in-out infinite;
+	}
+
+	.loading-line--lg {
+		width: 78%;
+		height: 22px;
+	}
+
+	.loading-line--sm {
+		width: 52%;
+	}
+
+	.resource-error {
+		max-width: 560px;
+		margin: 0 auto;
+		padding: 34px;
+		border: 1px solid var(--line-warm);
+		border-radius: var(--radius);
+		background: #fff;
+		text-align: center;
+	}
+
+	.resource-error[hidden] {
+		display: none;
+	}
+
+	.error-kicker {
+		margin: 0;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.resource-error h2 {
+		margin: 12px 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(26px, 3vw, 34px);
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.resource-error p:not(.error-kicker) {
+		margin: 10px 0 22px;
+		color: var(--muted);
+		line-height: 1.6;
+	}
+
+	.resource-body {
+		font-size: 16px;
+		line-height: 1.78;
+		color: var(--text);
+		overflow-wrap: anywhere;
+	}
+
+	.resource-body[hidden] {
+		display: none;
+	}
+
+	.resource-body :global(p) {
+		margin: 0 0 1.2em;
+	}
+
+	.resource-body :global(h1),
+	.resource-body :global(h2),
+	.resource-body :global(h3),
+	.resource-body :global(h4) {
+		margin: 1.4em 0 0.55em;
+		font-family: var(--font-display);
+		font-weight: 600;
+		line-height: 1.16;
+		letter-spacing: -0.025em;
+		color: var(--ink);
+	}
+
+	.resource-body :global(h1) {
+		font-size: clamp(28px, 3.4vw, 40px);
+	}
+
+	.resource-body :global(h2) {
+		font-size: clamp(24px, 3vw, 32px);
+	}
+
+	.resource-body :global(h3) {
+		font-size: clamp(20px, 2.4vw, 26px);
+	}
+
+	.resource-body :global(a) {
+		color: var(--orange-deep);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+
+	.resource-body :global(strong) {
+		font-weight: 700;
+		color: var(--ink);
+	}
+
+	.resource-body :global(ul),
+	.resource-body :global(ol) {
+		margin: 0 0 1.2em;
+		padding-left: 1.35em;
+	}
+
+	.resource-body :global(li) {
+		margin: 0.35em 0;
+	}
+
+	.resource-body :global(blockquote) {
+		margin: 1.5em 0;
+		padding: 16px 20px;
+		border-left: 3px solid var(--orange);
+		border-radius: 0 12px 12px 0;
+		background: #fff8f1;
+		color: #4d535e;
+	}
+
+	.resource-body :global(blockquote p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.resource-body :global(img) {
+		width: auto;
+		max-width: 100%;
+		height: auto;
+		margin: 1.5em 0;
+		border-radius: 12px;
+	}
+
+	.resource-body :global(figure) {
+		margin: 1.5em 0;
+	}
+
+	.resource-body :global(figcaption) {
+		margin-top: 8px;
+		font-size: 12px;
+		color: var(--faint);
+		text-align: center;
+	}
+
+	.resource-body :global(hr) {
+		margin: 2em 0;
+		border: 0;
+		border-top: 1px solid var(--line-warm);
+	}
+
+	.resource-body :global(table) {
+		display: block;
+		width: 100%;
+		margin: 1.5em 0;
+		overflow-x: auto;
+		border-collapse: collapse;
+		font-size: 14px;
+	}
+
+	.resource-body :global(th),
+	.resource-body :global(td) {
+		padding: 10px 12px;
+		border: 1px solid var(--line-warm);
+		text-align: left;
+	}
+
+	.resource-body :global(th) {
+		background: var(--cream);
+		color: var(--ink);
+	}
+
+	.resource-body :global(iframe),
+	.resource-body :global(video) {
+		max-width: 100%;
+		border: 0;
+		border-radius: 12px;
+	}
+
+	.resource-body :global(pre) {
+		margin: 1.5em 0;
+		padding: 16px;
+		overflow-x: auto;
+		border-radius: 12px;
+		background: #23272e;
+		color: #f8fafc;
+		font-size: 13px;
+		line-height: 1.6;
+	}
+
+	.resource-body :global(code) {
+		padding: 0.15em 0.35em;
+		border-radius: 5px;
+		background: #f4efe8;
+		font-family: var(--font-mono);
+		font-size: 0.9em;
+	}
+
+	.resource-body :global(pre code) {
+		padding: 0;
+		background: transparent;
+		color: inherit;
+	}
+
+	.resource-game {
+		padding: 34px;
+		border: 1px dashed var(--line-warm);
+		border-radius: var(--radius);
+		background: #fff;
+		text-align: center;
+	}
+
+	.resource-game[hidden],
+	.resource-file[hidden] {
+		display: none;
+	}
+
+	.resource-game-icon {
+		display: inline-grid;
+		place-items: center;
+		width: 64px;
+		height: 64px;
+		border-radius: 18px;
+		background: var(--orange-soft);
+		color: var(--orange-deep);
+	}
+
+	.resource-game-kicker {
+		margin: 16px 0 0;
+		font-family: var(--font-mono);
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.13em;
+		text-transform: uppercase;
+		color: var(--orange-deep);
+	}
+
+	.resource-game h2 {
+		margin: 8px 0 0;
+		font-family: var(--font-display);
+		font-size: clamp(26px, 3vw, 36px);
+		font-weight: 600;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.resource-game p:not(.resource-game-kicker) {
+		margin: 10px auto 22px;
+		max-width: 500px;
+		color: var(--muted);
+		line-height: 1.65;
+	}
+
+	.resource-file {
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		gap: 16px;
+		align-items: center;
+		margin-top: 34px;
+		padding: 20px;
+		border: 1px solid var(--line-warm);
+		border-radius: 20px;
+		background: var(--cream);
+	}
+
+	.resource-file-icon {
+		display: grid;
+		place-items: center;
+		width: 48px;
+		height: 48px;
+		border-radius: 14px;
+		background: #fff;
+		color: var(--orange-deep);
+		box-shadow: inset 0 0 0 1px var(--line-warm);
+	}
+
+	.resource-file-copy {
+		display: grid;
+		gap: 2px;
+		min-width: 0;
+	}
+
+	.resource-file-kicker {
+		font-family: var(--font-mono);
+		font-size: 9px;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.resource-file-copy strong {
+		overflow: hidden;
+		font-size: 14px;
+		font-weight: 700;
+		color: var(--ink);
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	.resource-file-kind {
+		font-size: 11.5px;
+		color: var(--muted);
+	}
+
+	.resource-file-action {
+		white-space: nowrap;
+	}
+
+	.resource-file-action[hidden] {
+		display: none;
+	}
+
+	.resource-file-action:disabled {
+		cursor: not-allowed;
+		opacity: 0.62;
+	}
+
+	.resource-file-action :global(svg) {
+		width: 16px;
+		height: 16px;
+	}
+
+	@keyframes resource-pulse {
+		0%,
+		100% {
+			opacity: 0.7;
+		}
+		50% {
+			opacity: 1;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.resource-detail-hero {
+			padding-top: 48px;
+		}
+
+		.resource-detail-hero h1 {
+			font-size: clamp(34px, 9vw, 46px);
+		}
+
+		.lede {
+			font-size: 15px;
+		}
+
+		.resource-file {
+			grid-template-columns: auto minmax(0, 1fr);
+		}
+
+		.resource-file-action {
+			grid-column: 1 / -1;
+			width: 100%;
+		}
+
+		.resource-error {
+			padding: 26px 20px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.loading-line {
+			animation: none;
+		}
+	}
+</style>

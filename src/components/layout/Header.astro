@@ -10,7 +10,9 @@ const isHome = pathname === '/' || pathname === '/index.html';
 const resolveHref = (href: string) => (href.startsWith('#') && !isHome ? `/${href}` : href);
 const isActive = (href: string, index: number) =>
 	href.startsWith('/')
-		? pathname === href.replace(/\/+$/, '') || (href === '/blog' && pathname.startsWith('/blog/'))
+		? pathname === href.replace(/\/+$/, '') ||
+			(href === '/blog' && pathname.startsWith('/blog/')) ||
+			(href === '/resource' && pathname.startsWith('/resource/'))
 		: isHome && index === 0;
 ---
 
