@@ -1,0 +1,291 @@
+---
+import { MATH_GLYPHS, mulberry32 } from '../../lib/math-glyphs';
+
+type Rect = { x1: number; x2: number; y1: number; y2: number };
+
+interface Props {
+	/** jumlah simbol (desktop); di mobile otomatis setengahnya */
+	count?: number;
+	/** porsi simbol biru, 0–1; sisanya oranye→kuning */
+	blueRatio?: number;
+	/** area bebas simbol (persen) agar teks utama tetap terbaca */
+	safe?: Rect | Rect[];
+	/** seed PRNG → posisi stabil antar build */
+	seed?: number;
+}
+
+const { count = 24, blueRatio = 0.5, safe = [], seed = 1 } = Astro.props;
+
+const safeZones = Array.isArray(safe) ? safe : [safe];
+const rand = mulberry32(seed);
+const pick = () => MATH_GLYPHS[Math.floor(rand() * MATH_GLYPHS.length)];
+
+const inSafe = (x: number, y: number) =>
+	safeZones.some((r) => x >= r.x1 && x <= r.x2 && y >= r.y1 && y <= r.y2);
+
+type Glyph = {
+	x: number;
+	y: number;
+	char: string;
+	tone: 'blue' | 'warm';
+	size: number;
+	rot: number;
+	op: number;
+	dur: number;
+	delay: number;
+};
+
+const glyphs: Glyph[] = [];
+const MIN_DIST = 7; // jarak minimum antar simbol (ruang persen)
+let tries = 0;
+
+while (glyphs.length < count && tries++ < count * 60) {
+	const x = 3 + rand() * 92;
+	const y = 4 + rand() * 90;
+	if (inSafe(x, y)) continue;
+	if (glyphs.some((g) => Math.hypot(g.x - x, g.y - y) < MIN_DIST)) continue;
+
+	glyphs.push({
+		x: +x.toFixed(2),
+		y: +y.toFixed(2),
+		char: pick(),
+		// pembagian deterministik → rasio biru selalu tepat & tersebar merata
+		tone:
+			Math.floor((glyphs.length + 1) * blueRatio) > Math.floor(glyphs.length * blueRatio)
+				? 'blue'
+				: 'warm',
+		size: Math.round(16 + rand() * 26),
+		rot: Math.round(-18 + rand() * 36),
+		op: +(0.2 + rand() * 0.2).toFixed(2),
+		dur: +(8 + rand() * 8).toFixed(1),
+		delay: +(-rand() * 10).toFixed(1),
+	});
+}
+---
+
+<div class="math-scramble" data-math-scramble aria-hidden="true">
+	{
+		glyphs.map((g) => (
+			<span
+				class="ms-glyph"
+				data-tone={g.tone}
+				style={`--x:${g.x}%;--y:${g.y}%;--size:${g.size}px;--rot:${g.rot}deg;--o:${g.op};--dur:${g.dur}s;--delay:${g.delay}s`}
+			>
+				<span class="ms-char">{g.char}</span>
+			</span>
+		))
+	}
+</div>
+
+<style>
+	.math-scramble {
+		position: absolute;
+		inset: 0;
+		z-index: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+
+	/* outer: posisi + dorongan kursor (translate); inner: float (transform) */
+	.ms-glyph {
+		--glow: rgba(56, 189, 248, 0.55);
+		position: absolute;
+		left: var(--x);
+		top: var(--y);
+		translate: var(--dx, 0px) var(--dy, 0px);
+		opacity: var(--o);
+		font-family: var(--font-mono);
+		font-weight: 600;
+		font-size: var(--size);
+		line-height: 1;
+		white-space: nowrap;
+		user-select: none;
+		transition:
+			translate 0.55s cubic-bezier(0.2, 0.8, 0.2, 1),
+			opacity 0.35s ease,
+			filter 0.35s ease;
+	}
+
+	.ms-glyph[data-tone='warm'] {
+		--glow: rgba(251, 191, 36, 0.6);
+	}
+
+	.ms-char {
+		display: inline-block;
+		rotate: var(--rot);
+		background-clip: text;
+		-webkit-background-clip: text;
+		color: transparent;
+		animation: ms-float var(--dur) ease-in-out var(--delay) infinite alternate;
+	}
+
+	.ms-glyph[data-tone='blue'] .ms-char {
+		background-image: linear-gradient(135deg, #2563eb 0%, #38bdf8 100%);
+	}
+
+	.ms-glyph[data-tone='warm'] .ms-char {
+		background-image: linear-gradient(135deg, #f97316 0%, #fb923c 35%, #fbbf24 70%, #eab308 100%);
+	}
+
+	/* sedang di-scramble / didekati kursor */
+	.ms-glyph.is-active {
+		opacity: min(calc(var(--o) + 0.45), 0.9);
+		filter: drop-shadow(0 0 10px var(--glow));
+	}
+
+	.math-scramble.is-paused .ms-char {
+		animation-play-state: paused;
+	}
+
+	@keyframes ms-float {
+		from {
+			transform: translateY(-6px);
+		}
+
+		to {
+			transform: translateY(8px);
+		}
+	}
+
+	@media (max-width: 640px) {
+		.ms-glyph:nth-child(even) {
+			display: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.ms-char {
+			animation: none;
+		}
+
+		.ms-glyph {
+			transition: none;
+		}
+	}
+</style>
+
+<script>
+	import { MATH_GLYPHS } from '../../lib/math-glyphs';
+
+	const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+	const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+
+	const randomGlyph = () => MATH_GLYPHS[Math.floor(Math.random() * MATH_GLYPHS.length)];
+
+	/** efek decoding: ganti karakter cepat beberapa kali lalu berhenti di simbol baru */
+	const scramble = (glyph: HTMLElement) => {
+		if (glyph.dataset.busy) return;
+		const char = glyph.firstElementChild as HTMLElement | null;
+		if (!char) return;
+
+		glyph.dataset.busy = '1';
+		glyph.classList.add('is-active');
+
+		const frames = 8 + Math.floor(Math.random() * 6);
+		let n = 0;
+		const timer = window.setInterval(() => {
+			char.textContent = randomGlyph();
+			if (++n >= frames) {
+				window.clearInterval(timer);
+				window.setTimeout(() => {
+					glyph.classList.remove('is-active');
+					delete glyph.dataset.busy;
+				}, 500);
+			}
+		}, 50);
+	};
+
+	const resetGlyph = (glyph: HTMLElement) => {
+		glyph.style.setProperty('--dx', '0px');
+		glyph.style.setProperty('--dy', '0px');
+	};
+
+	document.querySelectorAll<HTMLElement>('[data-math-scramble]').forEach((layer) => {
+		if (reduceMotion) return;
+
+		const host = layer.parentElement;
+		if (!host) return;
+
+		const glyphs = Array.from(layer.querySelectorAll<HTMLElement>('.ms-glyph'));
+		if (!glyphs.length) return;
+
+		// posisi dasar (persen) dibaca sekali — tanpa getBoundingClientRect per glyph
+		const base = glyphs.map((g) => ({
+			x: parseFloat(g.style.getPropertyValue('--x')) / 100,
+			y: parseFloat(g.style.getPropertyValue('--y')) / 100,
+			size: parseFloat(g.style.getPropertyValue('--size')) || 20,
+		}));
+
+		// 1) jeda animasi saat section di luar layar
+		let visible = false;
+		new IntersectionObserver(([entry]) => {
+			visible = entry.isIntersecting;
+			layer.classList.toggle('is-paused', !visible);
+		}).observe(host);
+
+		// 2) auto-scramble ambient
+		window.setInterval(() => {
+			if (!visible || document.hidden) return;
+			const shown = glyphs.filter((g) => g.offsetParent !== null);
+			if (!shown.length) return;
+			const amount = Math.random() < 0.4 ? 2 : 1;
+			for (let k = 0; k < amount; k++) {
+				scramble(shown[Math.floor(Math.random() * shown.length)]);
+			}
+		}, 1400);
+
+		// 3) interaksi kursor: dorong menjauh + glow + scramble saat masuk radius
+		if (!canHover) return;
+
+		const RADIUS = 160;
+		const PUSH = 28;
+		const near = new Set<HTMLElement>();
+		let pointerX = 0;
+		let pointerY = 0;
+		let raf = 0;
+
+		const update = () => {
+			raf = 0;
+			const box = layer.getBoundingClientRect();
+
+			glyphs.forEach((glyph, i) => {
+				const b = base[i];
+				const gx = box.left + b.x * box.width + b.size * 0.4;
+				const gy = box.top + b.y * box.height + b.size * 0.5;
+				const dx = gx - pointerX;
+				const dy = gy - pointerY;
+				const dist = Math.hypot(dx, dy);
+
+				if (dist < RADIUS) {
+					const force = ((1 - dist / RADIUS) * PUSH) / (dist || 1);
+					glyph.style.setProperty('--dx', `${(dx * force).toFixed(1)}px`);
+					glyph.style.setProperty('--dy', `${(dy * force).toFixed(1)}px`);
+					glyph.classList.add('is-active');
+					if (!near.has(glyph)) {
+						near.add(glyph);
+						scramble(glyph);
+					}
+				} else if (near.has(glyph)) {
+					near.delete(glyph);
+					resetGlyph(glyph);
+					if (!glyph.dataset.busy) glyph.classList.remove('is-active');
+				}
+			});
+		};
+
+		host.addEventListener('pointermove', (event) => {
+			if (event.pointerType !== 'mouse') return;
+			pointerX = event.clientX;
+			pointerY = event.clientY;
+			if (!raf) raf = window.requestAnimationFrame(update);
+		});
+
+		host.addEventListener('pointerleave', () => {
+			near.forEach((glyph) => {
+				resetGlyph(glyph);
+				if (!glyph.dataset.busy) glyph.classList.remove('is-active');
+			});
+			near.clear();
+		});
+	});
+</script>

@@ -1,6 +1,7 @@
 ---
 import Button from '../ui/Button.astro';
 import Icon from '../ui/Icon.astro';
+import MathScramble from '../ui/MathScramble.astro';
 
 const trust = [
 	'Latihan dasar gratis selamanya',
@@ -11,6 +12,7 @@ const trust = [
 
 <section class="cta">
 	<div class="polar-layer polar-layer--frost" aria-hidden="true"></div>
+	<MathScramble count={20} blueRatio={0.35} seed={21} safe={{ x1: 22, x2: 78, y1: 8, y2: 94 }} />
 	<div class="container cta-inner">
 		<h2 class="reveal">Siap naik level bersama Ascendemy?</h2>
 		<p class="reveal">
