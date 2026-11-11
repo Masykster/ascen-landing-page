@@ -36,6 +36,37 @@ export interface CbtTestimonial {
 	sort_order: number;
 }
 
+export type ResourceType = 'worksheet' | 'material' | 'game';
+export type ResourceFileType = 'pdf' | 'image';
+
+export interface CbtResource {
+	id: number;
+	slug: string;
+	type: ResourceType;
+	title: string;
+	excerpt: string;
+	thumbnail_url: string | null;
+	subject: string | null;
+	level: string | null;
+	file_url: string | null;
+	file_type: ResourceFileType | null;
+	external_url: string | null;
+	is_featured: boolean;
+	published_at: string;
+}
+
+export interface CbtResourceDetail extends CbtResource {
+	content: string | null;
+	game_key: string | null;
+	game_config: unknown | null;
+}
+
+export interface ResourceTypeMeta {
+	label: string;
+	tone: 'green' | 'blue' | 'orange';
+	cta: string;
+}
+
 export interface ApiResponse<T> {
 	success: boolean;
 	count?: number;
@@ -51,6 +82,16 @@ const baseUrl = (
 
 export const cbtOrigin = new URL(baseUrl).origin;
 
+export class CbtApiError extends Error {
+	readonly status: number;
+
+	constructor(status: number) {
+		super(`CBT API request failed: ${status}`);
+		this.name = 'CbtApiError';
+		this.status = status;
+	}
+}
+
 export function articleUrl(slug: string): string {
 	return `/blog/artikel?slug=${encodeURIComponent(slug)}`;
 }
@@ -58,6 +99,20 @@ export function articleUrl(slug: string): string {
 export function tagUrl(tag: string): string {
 	const value = tag.trim();
 	return value ? `/blog?tag=${encodeURIComponent(value)}` : '/blog';
+}
+
+export function resourceUrl(slug: string): string {
+	return `/resource/detail?slug=${encodeURIComponent(slug)}`;
+}
+
+const RESOURCE_TYPE_META: Record<ResourceType, ResourceTypeMeta> = {
+	worksheet: { label: 'Worksheet', tone: 'green', cta: 'Unduh worksheet' },
+	material: { label: 'Materi', tone: 'blue', cta: 'Baca materi' },
+	game: { label: 'Games', tone: 'orange', cta: 'Mainkan game' },
+};
+
+export function resourceTypeMeta(type: ResourceType): ResourceTypeMeta {
+	return RESOURCE_TYPE_META[type] ?? RESOURCE_TYPE_META.worksheet;
 }
 
 export async function fetchCbt<T>(path: string, init: RequestInit = {}): Promise<T> {
@@ -70,7 +125,7 @@ export async function fetchCbt<T>(path: string, init: RequestInit = {}): Promise
 	});
 
 	if (!response.ok) {
-		throw new Error(`CBT API request failed: ${response.status}`);
+		throw new CbtApiError(response.status);
 	}
 
 	return response.json() as Promise<T>;
