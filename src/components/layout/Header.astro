@@ -16,7 +16,7 @@ const isActive = (href: string, index: number) =>
 		: isHome && index === 0;
 ---
 
-<header class="site-header">
+<header class:list={['site-header', isHome && 'site-header--home']}>
 	<div class="container header-inner">
 		<a class="brand" href="/" aria-label="Ascendemy, kembali ke beranda">
 			<Image
@@ -171,6 +171,14 @@ const isActive = (href: string, index: number) =>
 			background-color 0.3s ease,
 			border-color 0.3s ease,
 			backdrop-filter 0.3s ease;
+	}
+
+	/* Beranda: header menyatu dengan gradasi hero di belakangnya. */
+	.site-header--home {
+		background: transparent;
+		border-bottom-color: transparent;
+		-webkit-backdrop-filter: none;
+		backdrop-filter: none;
 	}
 
 	.header-inner {

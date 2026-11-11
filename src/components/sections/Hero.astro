@@ -1,6 +1,7 @@
 ---
 import Button from '../ui/Button.astro';
 import ExamSimulator from '../ui/ExamSimulator.astro';
+import MathScramble from '../ui/MathScramble.astro';
 ---
 
 <section class="hero" id="beranda">
@@ -10,6 +11,8 @@ import ExamSimulator from '../ui/ExamSimulator.astro';
 		<span class="aurora aurora--3"></span>
 	</div>
 	<div class="hero-snow" aria-hidden="true"></div>
+	<!-- area tengah (judul + jendela simulator) dikosongkan agar konten tetap terbaca -->
+	<MathScramble count={28} blueRatio={0.65} seed={7} safe={{ x1: 17, x2: 83, y1: 9, y2: 100 }} />
 	<div class="container">
 		<div class="hero-copy">
 			<h1>
@@ -48,7 +51,9 @@ import ExamSimulator from '../ui/ExamSimulator.astro';
 	.hero {
 		position: relative;
 		overflow: hidden;
-		padding: 68px 0 0;
+		/* tarik hero ke belakang header agar gradasinya menyatu dengan navbar */
+		margin-top: -68px;
+		padding: 136px 0 0;
 		background:
 			/* matahari kutub — sedikit kuning hangat di kiri-atas */
 			radial-gradient(760px 380px at 16% -4%, #fff2c8 0%, rgba(255, 242, 200, 0) 68%),
@@ -347,13 +352,14 @@ import ExamSimulator from '../ui/ExamSimulator.astro';
 
 	@media (max-width: 900px) {
 		.hero {
-			padding-top: 54px;
+			padding-top: 122px;
 		}
 	}
 
 	@media (max-width: 640px) {
 		.hero {
-			padding-top: 42px;
+			margin-top: -62px;
+			padding-top: 104px;
 		}
 
 		.hero h1 {
