@@ -2,6 +2,7 @@
 import Button from '../ui/Button.astro';
 import CheckList from '../ui/CheckList.astro';
 import ExamPanel from '../ui/ExamPanel.astro';
+import HighlightText from '../ui/HighlightText.astro';
 import SplitLayout from '../ui/SplitLayout.astro';
 
 const benefits = [
@@ -35,8 +36,10 @@ const benefits = [
 
 		<h2 class="reveal">Rasakan ujian sesungguhnya, sebelum hari-H</h2>
 		<p class="reveal">
-			Tryout TKA dan UTBK dengan antarmuka Computer Based Test, timer, dan analisis hasil. Ketahui
-			posisimu lebih awal, lalu perbaiki dengan latihan yang tepat.
+			Tryout TKA dan UTBK dengan antarmuka{' '}
+			<HighlightText variant="orange">Computer Based Test</HighlightText>, timer, dan{' '}
+			<HighlightText variant="yellow">analisis hasil</HighlightText>. Ketahui posisimu lebih awal,
+			lalu perbaiki dengan latihan yang tepat.
 		</p>
 		<CheckList class="reveal reveal-list" items={benefits} />
 		<Button class="reveal" href="https://cbt.ascendemy.id/tryout" icon="arrow">Mulai tryout</Button>

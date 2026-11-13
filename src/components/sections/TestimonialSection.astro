@@ -1,6 +1,7 @@
 ---
 import { testimonials } from '../../data/testimonials';
 import Button from '../ui/Button.astro';
+import HighlightText from '../ui/HighlightText.astro';
 import TestimonialCard from './TestimonialCard.astro';
 
 // Kolom memakai subset data yang dirotasi supaya tiap kolom punya isi cukup
@@ -24,7 +25,7 @@ const mobileItems = testimonials;
 				<h2>Cerita siswa yang naik level bersama Ascendemy</h2>
 				<p>
 					Dari latihan harian, tryout, sampai olimpiade — mereka berbagi cara belajar yang
-					paling efektif untuk naik kelas.
+					<HighlightText variant="lime">paling efektif</HighlightText> untuk naik kelas.
 				</p>
 			</div>
 			<Button class="reveal" variant="ghost" href="/testimoni" icon="arrow">

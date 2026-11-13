@@ -1,6 +1,7 @@
 ---
 import Button from '../ui/Button.astro';
 import CheckList from '../ui/CheckList.astro';
+import HighlightText from '../ui/HighlightText.astro';
 import PracticePanel from '../ui/PracticePanel.astro';
 import SplitLayout from '../ui/SplitLayout.astro';
 
@@ -37,7 +38,7 @@ const benefits = [
 		<h2 class="reveal">Latihan yang menyesuaikan levelmu</h2>
 		<p class="reveal">
 			Mulai dari topik yang paling sering keluar. Setiap jawaban dilengkapi pembahasan agar kamu
-			memahami konsepnya, bukan sekadar menghafal rumus.
+			<HighlightText variant="cyan">memahami konsepnya</HighlightText>, bukan sekadar menghafal rumus.
 		</p>
 		<CheckList class="reveal reveal-list" items={benefits} tone="blue" />
 		<Button class="reveal" href="https://cbt.ascendemy.id/latihan" icon="arrow">
